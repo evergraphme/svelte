@@ -27,7 +27,7 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
-          echo mkdir gh-pages
+          mkdir gh-pages
           echo Hello there > gh-pages/index.html
           
       - name: Deploy to GitHub Pages
