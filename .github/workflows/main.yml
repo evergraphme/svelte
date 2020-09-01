@@ -18,8 +18,6 @@ jobs:
           scope: '@evergraph'
       - run: npm ci
       - run: npm test
-      - run: cat $NPM_CONFIG_USERCONFIG
-      - run: ls -la
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
