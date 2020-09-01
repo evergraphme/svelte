@@ -12,11 +12,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
+          always-auth: 'true'
           node-version: '10.x'
           registry-url: 'https://registry.npmjs.org'
-          always-auth: 'true'
+          scope: '@evergraph'
       - run: npm ci
       - run: npm test
+      - run: cat $NPM_CONFIG_USERCONFIG
       - run: ls -la
       - run: npm publish --access public
         env:
@@ -32,12 +34,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
           FOLDER: gh-pages
-      # Setup .npmrc file to publish to GitHub Packages
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '10.x'
-          registry-url: 'https://npm.pkg.github.com'
-          always-auth: 'true'
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
