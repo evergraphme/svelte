@@ -23,7 +23,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # Publish Github pages
       - name: Publish Github pages
-        run: |
+          run: |
           mkdir gh-pages
           echo Hello there > gh-pages/index.html
       - name: Deploy to GitHub Pages
