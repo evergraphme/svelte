@@ -8,11 +8,14 @@
   main {
     color: red;
   }
+  .box {
+    color: blue;
+  }
 </style>
 
 <main>
 Hello {name}!
-  <pre>
-    <slot></slot>
-  </pre>
+<div class="box">
+  <slot></slot>
+</div>
 </main>
