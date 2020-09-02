@@ -12,7 +12,7 @@
 
 <main>
 Hello {name}!
+  <pre>
+    <slot></slot>
+  </pre>
 </main>
-<pre>
-  <slot></slot>
-</pre>
