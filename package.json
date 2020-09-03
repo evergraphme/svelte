@@ -1,6 +1,6 @@
 {
   "name": "@evergraph/turtle-editor",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "main": "public/bundle.js",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^13.0.0",
