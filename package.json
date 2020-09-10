@@ -1,6 +1,6 @@
 {
   "name": "@evergraph/turtle-editor",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "main": "public/bundle.js",
   "devDependencies": {
     "@babel/core": "^7.11.5",
