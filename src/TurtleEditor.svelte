@@ -16,6 +16,7 @@
     else {
       const editor = editorElement.editor;
       editor.session.setUseWorker(false);
+      editor.selection.clearSelection();
       editor.setOptions({enableLiveAutocompletion: [{
         getCompletions: function(editor, session, pos, prefix, callback) {
           console.log('complete me', prefix);
