@@ -1,66 +1,128 @@
 // From https://www.w3.org/TR/REC-xml/#sec-notation
 
-export function characterSet() {
-  // characterSet, [a-z]
-  return new Rule({
-    name: 'characterSet',
-    next: (instance) => { return false; },
+class Parser {
+  constructor(expression, text) {
+    this.expression = expression;
+    this.text = '';
+    this.valid = true;
+    this.satisfied = false;
+
+    for (let i = 0; i < text.length; i++) {
+      this.push(text[i]);
+    }
+  }
+
+  get current() {
+    return this.buffer[this.start + this.length - 1];
+  }
+
+  get fullString() {
+    return this.buffer.substring(this.start, this.length);
+  }
+
+  get length() {
+    return this.text.length;
+  }
+
+  push(char) {
+    if (! this.valid) {
+      return false;
+    }
+    // this.length = this.length + 1;
+    const accepted = this.expression.push(this, char);
+    if (accepted) {
+      this.text = this.text + char;
+    }
+    // console.log(this.expression.name, this.text, this.valid, accepted);
+    return accepted;
+  }
+}
+
+class Expression {
+  constructor({name, push}) {
+    this.name = name;
+    this.push = push;
+  }
+
+  test(text) {
+    return new Parser(this, text);
+  }
+
+  // push(parser, char) {
+  //   return false;
+  // }
+}
+
+export function characterClass(regex) {
+  // characterClass, [a-z]
+  return new Expression({
+    name: 'characterClass',
+    push: (parser, char) => { return parser.valid = parser.satisfied = (parser.length === 0 && regex.test(char)); },
   });
 }
 
-export function string() {
+export function string(s) {
   // string, 'abc'
-  return new Rule({
+  return new Expression({
     name: 'string',
-    next: (instance) => { return false; },
+    push: (parser, char) => {
+      if (parser.length >= s.length) {
+        return parser.valid = parser.satisfied = false;
+      }
+      if (s.indexOf(parser.text + char) != 0) {
+        return parser.valid = parser.satisfied = false;
+      }
+      parser.satisfied = s.length === (parser.length + 1);
+      return true;
+    },
   });
 }
 
 export function optional() {
   // optional, A?
-  return new Rule({
+  return new Expression({
     name: 'optional',
-    next: (instance) => { return false; },
+    push: (parser, char) => { return false; },
   });
 }
 
 export function sequence() {
   // sequence, A B
-  return new Rule({
+  return new Expression({
     name: 'sequence',
-    next: (instance) => { return false; },
+    push: (parser, char) => { return false; },
   });
 }
 
 export function or() {
   // or, A | B
-  return new Rule({
+  return new Expression({
     name: 'or',
-    next: (instance) => { return false; },
+    push: (parser, char) => { return false; },
   });
 }
 
 export function difference() {
   // difference, A - B
-  return new Rule({
+  return new Expression({
     name: 'difference',
-    next: (instance) => { return false; },
+    push: (parser, char) => { return false; },
   });
 }
 
 export function oneOrMore() {
   // oneOrMore, A+
-  return new Rule({
+  return new Expression({
     name: 'oneOrMore',
-    next: (instance) => { return false; },
+    push: (parser, char) => { return false; },
   });
 }
 
 export function zeroOrMore() {
   // zeroOrMore, A*
-  return new Rule({
+  return new Expression({
     name: 'zeroOrMore',
-    next: (instance) => { return false; },
+    push: (parser, char) => { return false; },
   });
 }
 
