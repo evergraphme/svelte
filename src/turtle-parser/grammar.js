@@ -223,7 +223,20 @@ export function BLANK_NODE_LABEL() {
   return new Rule({
     name: 'BLANK_NODE_LABEL',
     terminal: true,
-    next: (instance) => { return sequence('_:', or(PN_CHARS_U(), characterClass(/[0-9]/)), optional(sequence(zeroOrMore(or(PN_CHARS(), string('.')), PN_CHARS()))); },
+    next: (instance) => {
+      return sequence(
+        '_:',
+        or(
+            PN_CHARS_U(),
+            characterClass(/[0-9]/)),
+        optional(
+          sequence(
+            zeroOrMore(
+              or(
+                PN_CHARS(),
+                string('.'))),
+              PN_CHARS())));
+    },
   });
 }
 export function LANGTAG() {
@@ -231,7 +244,18 @@ export function LANGTAG() {
   return new Rule({
     name: 'LANGTAG',
     terminal: true,
-    next: (instance) => { return sequence(string('@'), oneOrMore(characterClass(/[a-zA-Z]/)), zeroOrMore(sequence(string('-'), oneOrMore(characterClass(/[a-zA-Z0-9]/))); },
+    next: (instance) => {
+      return
+        sequence(
+          string('@'),
+          oneOrMore(
+            characterClass(/[a-zA-Z]/)),
+          zeroOrMore(
+            sequence(
+              string('-'),
+              oneOrMore(
+                characterClass(/[a-zA-Z0-9]/)))));
+          },
   });
 }
 export function INTEGER() {
@@ -255,7 +279,7 @@ export function DOUBLE() {
   return new Rule({
     name: 'DOUBLE',
     terminal: true,
-    next: (instance) => { return sequence([+-]?, or(sequence(oneOrMore(characterClass(/[0-9]/)), string('.'), zeroOrMore(characterClass(/[0-9]/)), EXPONENT()), sequence(string('.'), oneOrMore(characterClass(/[0-9]/)), EXPONENT()), sequence(oneOrMore(characterClass(/[0-9]/)), EXPONENT()))); },
+    next: (instance) => { return sequence(optional(characterClass(/[+-]/)), or(sequence(oneOrMore(characterClass(/[0-9]/)), string('.'), zeroOrMore(characterClass(/[0-9]/)), EXPONENT()), sequence(string('.'), oneOrMore(characterClass(/[0-9]/)), EXPONENT()), sequence(oneOrMore(characterClass(/[0-9]/)), EXPONENT()))); },
   });
 }
 export function EXPONENT() {
@@ -271,7 +295,16 @@ export function STRING_LITERAL_QUOTE() {
   return new Rule({
     name: 'STRING_LITERAL_QUOTE',
     terminal: true,
-    next: (instance) => { return sequence(string('"'), zeroOrMore(or(characterClass(/[^\x22\x5C\xA\xD]/), ECHAR(), UCHAR()), string('"')); },
+    next: (instance) => {
+      return
+        sequence(
+          string('"'),
+          zeroOrMore(
+            or(
+              characterClass(/[^\x22\x5C\x0A\x0D]/),
+              ECHAR(),
+              UCHAR())),
+          string('"')); },
   });
 }
 export function STRING_LITERAL_SINGLE_QUOTE() {
@@ -303,7 +336,7 @@ export function UCHAR() {
   return new Rule({
     name: 'UCHAR',
     terminal: true,
-    next: (instance) => { return or(sequence(string('\u'), HEX(), HEX(), HEX(), HEX()), sequence(string('\U'), HEX(), HEX(), HEX(), HEX(), HEX(), HEX(), HEX(), HEX())); },
+    next: (instance) => { return or(sequence(string('\\u'), HEX(), HEX(), HEX(), HEX()), sequence(string('\\U'), HEX(), HEX(), HEX(), HEX(), HEX(), HEX(), HEX(), HEX())); },
   });
 }
 export function ECHAR() {
@@ -335,7 +368,22 @@ export function PN_CHARS_BASE() {
   return new Rule({
     name: 'PN_CHARS_BASE',
     terminal: true,
-    next: (instance) => { return or(characterClass(/[A-Z]/) , characterClass(/[a-z]/), characterClass([/\u00C0-\u00D6]/), characterClass([/\u00D8-\u00F6]/), characterClass([/\u00F8-\u02FF]/), characterClass([/\u0370-\u037D]/), characterClass([/\u037F-\u1FFF]/), characterClass([/\u200C-\u200D]/), characterClass([/\u2070-\u218F]/), characterClass([/\u2C00-\u2FEF]/), characterClass([/\u3001-\uD7FF]/), characterClass([/\uF900-\uFDCF]/), characterClass([/\uFDF0-\uFFFD]/)); },
+    next: (instance) => {
+      return
+        or(
+          characterClass(/[A-Z]/),
+          characterClass(/[a-z]/),
+          characterClass(/[\u00C0-\u00D6]/),
+          characterClass(/[\u00D8-\u00F6]/),
+          characterClass(/[\u00F8-\u02FF]/),
+          characterClass(/[\u0370-\u037D]/),
+          characterClass(/[\u037F-\u1FFF]/),
+          characterClass(/[\u200C-\u200D]/),
+          characterClass(/[\u2070-\u218F]/),
+          characterClass(/[\u2C00-\u2FEF]/),
+          characterClass(/[\u3001-\uD7FF]/),
+          characterClass(/[\uF900-\uFDCF]/),
+          characterClass(/[\uFDF0-\uFFFD]/)); },
   });
 }
 export function PN_CHARS_U() {
@@ -359,7 +407,17 @@ export function PN_PREFIX() {
   return new Rule({
     name: 'PN_PREFIX',
     terminal: true,
-    next: (instance) => { return sequence(PN_CHARS_BASE(), optional(sequence(zeroOrMore(or(PN_CHARS(), string('.')), PN_CHARS))); },
+    next: (instance) => {
+      return
+        sequence(
+          PN_CHARS_BASE(),
+          optional(
+            sequence(
+              zeroOrMore(
+                or(
+                  PN_CHARS(),
+                  string('.'))),
+              PN_CHARS()))); },
   });
 }
 export function PN_LOCAL() {

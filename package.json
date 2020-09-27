@@ -27,7 +27,7 @@
   "dependencies": {},
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack",
-    "test": "echo not jest",
+    "test": "jest",
     "test-watch": "jest --watchAll",
     "dev": "webpack-dev-server --content-base public"
   }
