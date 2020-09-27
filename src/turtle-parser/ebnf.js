@@ -75,8 +75,8 @@ export function string(s) {
   return new Expression({
     name: 'string',
     push: (parser, char) => {
-      if (parser.length >= s.length) {
-        return parser.valid = parser.satisfied = false;
+      if (parser.length === s.length) {
+        return false;
       }
       if (s.indexOf(parser.text + char) != 0) {
         return parser.valid = parser.satisfied = false;
@@ -110,19 +110,51 @@ export function optional(expression) {
   });
 }
 
-export function sequence() {
+export function sequence(expressions) {
   // sequence, A B
   return new Expression({
     name: 'sequence',
-    push: (parser, char) => { return false; },
+    push: (parser, char) => {
+      if (!parser.wrapped) {
+        parser.wrapped = expressions.map(e => e.test());
+        parser.index = 0;
+      }
+      if (parser.index >= parser.wrapped.length) {
+        return false;
+      }
+      let accepted = parser.wrapped[parser.index].push(char);
+      if (!parser.wrapped[parser.index].valid) {
+        parser.valid = false;
+        parser.index = parser.wrapped.length;
+        return false;
+      }
+      while (parser.index + 1 < parser.wrapped.length && !accepted) {
+        parser.index = parser.index + 1;
+        accepted = parser.wrapped[parser.index].push(char);
+        if (!parser.wrapped[parser.index].valid) {
+          parser.valid = false;
+          parser.index = parser.wrapped.length;
+          return false;
+        }
+      }
+      parser.satisfied = parser.wrapped.every(p => p.satisfied);
+      return accepted;
+    },
   });
 }
 
-export function or() {
+export function or(expressions) {
   // or, A | B
   return new Expression({
     name: 'or',
-    push: (parser, char) => { return false; },
+    push: (parser, char) => {
+      parser.wrapped = parser.wrapped || expressions.map(e => e.test());
+      const accepted = parser.wrapped.some(p => p.push(char));
+      parser.satisfied = parser.wrapped.some(p => p.satisfied);
+      parser.wrapped = parser.wrapped.filter(p => p.valid);
+      parser.valid = parser.wrapped.length > 0;
+      return accepted;
+    },
   });
 }
 
@@ -134,19 +166,60 @@ export function difference() {
   });
 }
 
-export function oneOrMore() {
+export function oneOrMore(expression) {
   // oneOrMore, A+
   return new Expression({
     name: 'oneOrMore',
-    push: (parser, char) => { return false; },
+    push: (parser, char) => {
+      if (parser.nomore) {
+        return false;
+      }
+      parser.wrapped = parser.wrapped || [];
+      let current = parser.wrapped[parser.wrapped.length - 1];
+      let accepted = current && current.push(char);
+      if (! accepted && (!current || current.valid)) {
+        current = expression.test();
+        accepted = current.push(char);
+        if (accepted) {
+          parser.wrapped.push(current);
+        }
+        else {
+          parser.nomore = true;
+        }
+      }
+      parser.valid = parser.wrapped.every(p => p.valid);
+      parser.satisfied = parser.wrapped.length > 0 && parser.wrapped.every(p => p.satisfied);
+      return accepted;
+    },
   });
 }
 
-export function zeroOrMore() {
+export function zeroOrMore(expression) {
   // zeroOrMore, A*
   return new Expression({
     name: 'zeroOrMore',
-    push: (parser, char) => { return false; },
+    push: (parser, char) => {
+      if (parser.nomore) {
+        return false;
+      }
+      parser.wrapped = parser.wrapped || [];
+      let current = parser.wrapped[parser.wrapped.length - 1];
+      let accepted = current && current.push(char);
+      if (! accepted && (!current || current.valid)) {
+        current = expression.test();
+        accepted = current.push(char);
+        if (accepted) {
+          parser.wrapped.push(current);
+        }
+        else {
+          parser.nomore = true;
+        }
+      }
+      parser.valid = parser.wrapped.every(p => p.valid);
+      parser.satisfied = parser.wrapped.every(p => p.satisfied);
+      return accepted;
+    },
+    satisfied: true,
   });
 }
 
