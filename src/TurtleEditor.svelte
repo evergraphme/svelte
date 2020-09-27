@@ -2,10 +2,13 @@
 
 <script>
   import { tick, onMount } from 'svelte';
+  require('./turtleParser');
   const ace = require('ace-custom-element/dist/index.umd.js');
   require('ace-custom-element/dist/ace/ext-language_tools');
   require('ace-custom-element/dist/ace/theme-chrome');
   require('ace-custom-element/dist/ace/mode-turtle');
+  const N3 = require('n3');
+  const streamParser = new N3.StreamParser();
 
   let editorElement;
 
@@ -41,7 +44,7 @@
         // {type: "string.quoted.double.turtle", value: ""Spidermean"", index: 3, start: 14}
         // ^^ index = zero-based index of tokens in the current row
 
-        // console.log(editor.session.getTokens(delta.start.row));
+        console.log(editor.session.getTokens(delta.start.row));
 // 0: {type: "text", value: "    "}
 // 1: {type: "entity.name.other.qname.turtle", value: "foaf:name"}
 // 2: {type: "text", value: " "}
