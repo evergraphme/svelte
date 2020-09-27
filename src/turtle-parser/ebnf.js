@@ -1,11 +1,11 @@
 // From https://www.w3.org/TR/REC-xml/#sec-notation
 
 class Parser {
-  constructor(expression, text) {
+  constructor({expression, text = '', satisfied = false}) {
     this.expression = expression;
     this.text = '';
     this.valid = true;
-    this.satisfied = false;
+    this.satisfied = satisfied;
 
     for (let i = 0; i < text.length; i++) {
       this.push(text[i]);
@@ -39,13 +39,18 @@ class Parser {
 }
 
 class Expression {
-  constructor({name, push}) {
+  constructor({name, push, satisfied = false}) {
     this.name = name;
     this.push = push;
+    this.satisfied = satisfied;
   }
 
   test(text) {
-    return new Parser(this, text);
+    return new Parser({
+      expression: this,
+      text,
+      satisfied: this.satisfied,
+    });
   }
 
   // push(parser, char) {
@@ -57,7 +62,11 @@ export function characterClass(regex) {
   // characterClass, [a-z]
   return new Expression({
     name: 'characterClass',
-    push: (parser, char) => { return parser.valid = parser.satisfied = (parser.length === 0 && regex.test(char)); },
+    push: (parser, char) => {
+      if (parser.length > 0) {
+        return false;
+      }
+      return parser.valid = parser.satisfied = regex.test(char); },
   });
 }
 
@@ -78,11 +87,26 @@ export function string(s) {
   });
 }
 
-export function optional() {
+export function optional(expression) {
   // optional, A?
   return new Expression({
     name: 'optional',
-    push: (parser, char) => { return false; },
+    push: (parser, char) => {
+      if (parser.nomore) {
+        return false;
+      }
+      parser.wrapped = parser.wrapped || expression.test();
+      let accepted = parser.wrapped.push(char);
+      if (! accepted) {
+        parser.nomore = true;
+        if (! parser.wrapped.valid) {
+          parser.text = '';
+        }
+      }
+      parser.satisfied = parser.length === 0 || parser.wrapped.satisfied;
+      return accepted;
+    },
+    satisfied: true,
   });
 }
 
