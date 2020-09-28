@@ -40,17 +40,16 @@ class Parser {
   toString(indent = 0) {
     let result = '';
     let nextIndent = indent;
-    if (typeof(this.expression.terminal) !== 'undefined') {
-      result = `${''.padStart(indent)}"${this.text}" ${this.expression.name} ${this.valid ? 'valid' : 'invalid'}${this.satisfied ? ' satisfied' : ''}\n`;
+    if (this.expression.terminal === false || ! this.valid || ! this.satisfied) {
+      const state = this.valid ? this.satisfied ? '√' : '⋯' : 'x';
+      result = `${''.padStart(indent)}${state} ${this.expression.name} [${this.text}]\n`;
       nextIndent = indent + 2;
     }
-    if (!(this.valid && this.satisfied)) {
-      if (Array.isArray(this.wrapped)) {
-        result = result + this.wrapped.map(p => p.toString(nextIndent)).filter(l => l.length > 0).join('');
-      }
-      else if (this.wrapped) {
-        result = result + this.wrapped.toString(nextIndent);
-      }
+    if (Array.isArray(this.wrapped)) {
+      result = result + this.wrapped.map(p => p.toString(nextIndent)).filter(l => l.length > 0).join('');
+    }
+    else if (this.wrapped) {
+      result = result + this.wrapped.toString(nextIndent);
     }
     return result;
   }
@@ -145,6 +144,7 @@ export function optional(expression) {
         parser.nomore = true;
         if (! parser.wrapped.valid) {
           parser.text = '';
+          parser.wrapped = undefined;
         }
       }
       parser.satisfied = parser.length === 0 || parser.wrapped.satisfied;
@@ -202,6 +202,7 @@ export function or(expressions) {
     push: (parser, char) => {
       parser.wrapped = parser.wrapped || expressions.map(e => e.test());
       const accepted = parser.wrapped.map(p => p.push(char)).some(a => a);
+      parser.wrapped = parser.wrapped.filter(p => p.valid);
       parser.satisfied = parser.wrapped.some(p => p.satisfied);
       if (accepted) {
         parser.wrapped = parser.wrapped.filter(p => p.length === parser.length + 1);
