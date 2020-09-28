@@ -36,13 +36,33 @@ class Parser {
     // console.log(this.expression.name, this.text, this.valid, accepted);
     return accepted;
   }
+
+  toString(indent = 0) {
+    let result = '';
+    let nextIndent = indent;
+    if (typeof(this.expression.terminal) !== 'undefined') {
+      result = `${''.padStart(indent)}"${this.text}" ${this.expression.name} ${this.valid ? 'valid' : 'invalid'}${this.satisfied ? ' satisfied' : ''}\n`;
+      nextIndent = indent + 2;
+    }
+    if (!(this.valid && this.satisfied)) {
+      if (Array.isArray(this.wrapped)) {
+        result = result + this.wrapped.map(p => p.toString(nextIndent)).filter(l => l.length > 0).join('');
+      }
+      else if (this.wrapped) {
+        result = result + this.wrapped.toString(nextIndent);
+      }
+    }
+    return result;
+  }
 }
 
-class Expression {
-  constructor({name, push, satisfied = false}) {
+export class Expression {
+  constructor({name, push, terminal, satisfied = false, lazy_expression}) {
     this.name = name;
-    this.push = push;
+    this.terminal = terminal;
+    this.push = push || this.lazy_push;
     this.satisfied = satisfied;
+    this.lazy_expression = lazy_expression;
   }
 
   test(text) {
@@ -53,9 +73,16 @@ class Expression {
     });
   }
 
-  // push(parser, char) {
-  //   return false;
-  // }
+  // Hmm. Must be a prettier way to handle circular references in Turtle/EBNF grammar
+  lazy_push(parser, char) {
+    if (! this.expression) {
+      this.expression = this.lazy_expression && this.lazy_expression();
+    }
+    if (this.expression) {
+      return this.expression.push(parser, char);
+    }
+    return false;
+  }
 }
 
 export function characterClass(regex) {
@@ -87,6 +114,23 @@ export function string(s) {
   });
 }
 
+export function caseInsensitiveString(s) {
+  // string, 'abc'
+  return new Expression({
+    name: 'string',
+    push: (parser, char) => {
+      if (parser.length === s.length) {
+        return false;
+      }
+      if (s.toLowerCase().indexOf(parser.text.toLowerCase() + char.toLowerCase()) != 0) {
+        return parser.valid = parser.satisfied = false;
+      }
+      parser.satisfied = s.length === (parser.length + 1);
+      return true;
+    },
+  });
+}
+
 export function optional(expression) {
   // optional, A?
   return new Expression({
@@ -110,7 +154,7 @@ export function optional(expression) {
   });
 }
 
-export function sequence(expressions) {
+export function sequence(expressions, ws = false) {
   // sequence, A B
   return new Expression({
     name: 'sequence',
@@ -128,6 +172,10 @@ export function sequence(expressions) {
         parser.index = parser.wrapped.length;
         return false;
       }
+      if (!accepted && ws && /\s/.test(char)) {
+        // Accept whitespace between sequence expressions if non-terminal
+        return true;
+      }
       while (parser.index + 1 < parser.wrapped.length && !accepted) {
         parser.index = parser.index + 1;
         accepted = parser.wrapped[parser.index].push(char);
@@ -143,16 +191,24 @@ export function sequence(expressions) {
   });
 }
 
+export function wsequence(expressions) {
+  return sequence(expressions, true);
+}
+
 export function or(expressions) {
   // or, A | B
   return new Expression({
     name: 'or',
     push: (parser, char) => {
       parser.wrapped = parser.wrapped || expressions.map(e => e.test());
-      const accepted = parser.wrapped.some(p => p.push(char));
+      const accepted = parser.wrapped.map(p => p.push(char)).some(a => a);
       parser.satisfied = parser.wrapped.some(p => p.satisfied);
-      parser.wrapped = parser.wrapped.filter(p => p.valid);
-      parser.valid = parser.wrapped.length > 0;
+      if (accepted) {
+        parser.wrapped = parser.wrapped.filter(p => p.length === parser.length + 1);
+      }
+      else {
+        parser.valid = parser.wrapped.length > 0 && parser.satisfied;
+      }
       return accepted;
     },
   });
