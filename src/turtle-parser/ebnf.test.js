@@ -279,4 +279,6 @@ describe('ebnf', () => {
       expect(accepted).toBe(false);
     });
   });
+
+  test.todo('comments');
 });
