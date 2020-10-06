@@ -30,10 +30,24 @@ function get(parser, path, property = 'text') {
   return current[property];
 }
 
+function getAll(parser, name, property = 'text') {
+  let result = parser.expression.name === name ? [parser[property]] : [];
+  if (parser.wrapped) {
+    if (parser.wrapped.expression) {
+      result.push(...getAll(parser.wrapped, name, property));
+    }
+    else {
+      result.push(...parser.wrapped.map(p => getAll(p, name, property)).flat());
+    }
+  }
+  return result;
+}
+
 export const indent = function(parser, actionable) {
   const char = parser.text[parser.text.length - 1];
   const subject = get(parser, 'statement.or.triples.sequence.subject');
-  const objectList = get(parser, 'statement.or.triples.sequence.predicateObjectList.objectList');
+  const objectLists = getAll(parser, 'objectList');
+  const lastObjectList = objectLists[objectLists.length - 1];
   // Subject just finished and the user typed a whitespace
   if (char === ' ' && parser.text.length === subject.length + 1) {
     // Replace latest entry with indentation
@@ -50,7 +64,7 @@ export const indent = function(parser, actionable) {
     actionable.replace(';\n  ');
   }
   // Object just finihsed and the user typed a comma
-  else if (char === ',' && objectList && objectList.endsWith(',')) {
+  else if (char === ',' && lastObjectList && lastObjectList.endsWith(',')) {
     // Replace latest entry with added newline
     actionable.replace(',\n    ');
   }

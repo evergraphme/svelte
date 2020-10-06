@@ -1,1 +1,2 @@
-export * as turtle from './grammar';
+import * as turtle from './grammar';
+export { turtle };
