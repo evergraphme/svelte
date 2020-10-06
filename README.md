@@ -2,6 +2,8 @@
 
 This is a work in progress towards a web component for editing turtle (RDF) documents easier than before.
 
+Try it out at https://evergraphme.github.io/turtle-editor/
+
 # Input assistance
 
 The editor will try to assist input to increase input speed, ensure validity and improve readability.
