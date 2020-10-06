@@ -42,7 +42,7 @@ class Parser {
     let nextIndent = indent;
     if (this.expression.terminal === false || ! this.valid || ! this.satisfied) {
       const state = this.valid ? this.satisfied ? '√' : '⋯' : 'x';
-      result = `${''.padStart(indent)}${state} ${this.expression.name} [${this.text}]\n`;
+      result = `${''.padStart(indent)}${state} ${this.expression.name} [${this.text.replace('\n', '\\n')}]\n`;
       nextIndent = indent + 2;
     }
     if (Array.isArray(this.wrapped)) {
