@@ -28,7 +28,14 @@ class Parser {
     if (! this.valid) {
       return false;
     }
-    // this.length = this.length + 1;
+    if (char.length > 1) {
+      // Push one character at a time
+      let result;
+      for (let i = 0; i < char.length; i++) {
+        result = this.push(char[i]);
+      }
+      return result;
+    }
     const accepted = this.expression.push(this, char);
     if (accepted) {
       this.text = this.text + char;

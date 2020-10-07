@@ -6,6 +6,7 @@ export class TurtleAssistant {
     this.editor = editor;
     // this._assistedInput = false;
     this.parser = turtle.turtleDoc.test('');
+    this.statements = [];
 
     this.editor.session.on('change', this._change.bind(this));
   }
@@ -22,17 +23,19 @@ export class TurtleAssistant {
     this.editor.session.undoChanges([this._delta], false);
     this._assistedInput = true;
     this.editor.insert(replacement);
+    this.parser = this.parser.expression.test(this.parser.text.slice(0, -1) + replacement);
   }
 
   _change(delta) {
     this._delta = delta;
-    // console.log(delta, this._assistedInput);
+    const change = delta.lines.join('\n');
+    console.log(delta, this.parser.text.replace('\n', '\\n'), this._assistedInput);
     if (this._assistedInput) {
       // Assisted input, e.g. indentation rules, should pass through
       this._assistedInput = undefined;
       return;
     }
-    if (delta.lines.length !== 1 || delta.lines[0].length !== 1) {
+    if (change.length !== 1) {
       // We only handle single-character input for now due to parser limitation
       console.log('non-single-character-input undoed');
       this.undo(delta);
@@ -40,9 +43,8 @@ export class TurtleAssistant {
       this.parser = this.parser.expression.test(this.parser.text);
       return;
     }
-    const char = delta.lines[0];
     if (delta.action === 'insert') {
-      const accepted = this.parser.push(char);
+      const accepted = this.parser.push(change);
       if (!accepted) {
         // Undo input not accepted by parser
         console.log('not accepted by parser, undoed');
@@ -54,7 +56,20 @@ export class TurtleAssistant {
       indent(this.parser, this);
       // Parse a single statement at a time
       if (this.parser.satisfied) {
+        // push statement to stack
+        // remove trailing slash that we trust indentation to have added
+        this.statements.push(this.parser.text.slice(0, -1));
         this.parser = this.parser.expression.test('');
+      }
+    }
+    else if (delta.action === 'remove') {
+      if (this.parser.text.length > 0) {
+        // Reset parser, it does not support stepping backwards
+        this.parser = this.parser.expression.test(this.parser.text.slice(0, -1));
+      }
+      else {
+        // Pop the previous statement
+        this.parser = this.parser.expression.test(this.statements.pop());
       }
     }
     // editor.insert("Something cool");
