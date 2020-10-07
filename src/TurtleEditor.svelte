@@ -23,19 +23,22 @@
       let assistedInput; // Used to detect assisted text changes
       editor.session.setUseWorker(false);
       editor.selection.clearSelection();
-      editor.setOptions({enableLiveAutocompletion: [{
-        getCompletions: function(editor, session, pos, prefix, callback) {
-          // console.log('complete me', prefix);
-          callback(null, [
-            {
-                // caption: 'xyz',
-                value: prefix + 'more',
-                // score: 3,
-                // meta: 'hello',
-            },
-          ]);
-        }
-      }]});
+      editor.setOptions({
+        enableLiveAutocompletion: [{
+          getCompletions: function(editor, session, pos, prefix, callback) {
+            // console.log('complete me', prefix);
+            callback(null, [
+              {
+                  // caption: 'xyz',
+                  value: prefix + 'more',
+                  // score: 3,
+                  // meta: 'hello',
+              },
+            ]);
+          }
+        }],
+        fontSize: '14pt',
+      });
 
       editor.session.on('change', function(delta) {
       // delta.start, delta.end, delta.lines, delta.action
