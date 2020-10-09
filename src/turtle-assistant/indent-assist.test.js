@@ -39,11 +39,53 @@ describe('statement', () => {
 
     indent(parser, actionableMock);
     expect(actionableMock.replace.mock.calls.length).toBe(1);
+    expect(actionableMock.replace.mock.calls[0][0]).toBe('\n    :apples,\n    ');
+    // Should replace " :apples"
+    expect(actionableMock.replace.mock.calls[0][1]).toEqual({
+      start: {
+        row: 1,
+        column: 7,
+      },
+      end: {
+        row: 1,
+        column: 15,
+      }
+    });
+  });
+
+  test('indent after comma/yet another object', () => {
+    const parser = turtle.turtleDoc.test(':me\n  :like\n    :apples,\n    :oranges');
+    const accepted = parser.push(',');
+    const actionableMock = {replace: jest.fn()};
+
+    indent(parser, actionableMock);
+    expect(actionableMock.replace.mock.calls.length).toBe(1);
     expect(actionableMock.replace.mock.calls[0][0]).toBe(',\n    ');
   });
 
   test('indent after comma/new object, even after a semi-colon', () => {
-    const parser = turtle.turtleDoc.test(':me :like :apples; :dislike :orange; :favor :bananas');
+    const parser = turtle.turtleDoc.test(':me\n  :like :apples;\n  :dislike :orange;\n  :favor :bananas');
+    const accepted = parser.push(',');
+    const actionableMock = {replace: jest.fn()};
+
+    indent(parser, actionableMock);
+    expect(actionableMock.replace.mock.calls.length).toBe(1);
+    expect(actionableMock.replace.mock.calls[0][0]).toBe('\n    :bananas,\n    ');
+    // Should replace " :bananas"
+    expect(actionableMock.replace.mock.calls[0][1]).toEqual({
+      start: {
+        row: 3,
+        column: 7,
+      },
+      end: {
+        row: 3,
+        column: 16,
+      }
+    });
+  });
+
+  test('indent after comma/yet another object, even after a semi-colon', () => {
+    const parser = turtle.turtleDoc.test(':me\n  :dislike :bananas;\n  :like\n    :apples,\n    :oranges');
     const accepted = parser.push(',');
     const actionableMock = {replace: jest.fn()};
 

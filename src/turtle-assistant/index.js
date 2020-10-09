@@ -1,6 +1,32 @@
 import { turtle } from '../turtle-parser';
 import { indent } from './indent-assist';
+const ace = require('ace-custom-element/dist/index.umd.js');
 
+/*
+  Provides structured assistance when editing turtle,
+  modifying the text as you type.
+
+  State:
+  * Editor - link to the Ace editor
+    (position => {row, column} - zero-based)
+    (range => {start:position, end:position})
+    * clearSelection()
+    * focus()
+    * getCursorPosition() => position
+    * getValue() => all text
+    * insert(text)
+    * moveCursorTo(row, column)
+    (session)
+      * getLength() => no of rows
+      * getLine(row) => line text
+      * getLines(firstRow, lastRow)
+      * insert({row, column}, text)
+      * remove(range)
+      * replace(range, text)
+      * undoChanges(deltas, dontSelect)
+  * Parser - link to turtle parser of the _current_ statement
+  * Statements - list of finished statements with reference to text positions
+*/
 export class TurtleAssistant {
   constructor({editor}) {
     this.editor = editor;
@@ -9,30 +35,49 @@ export class TurtleAssistant {
     this.statements = [];
 
     this.editor.session.on('change', this._change.bind(this));
+    if (window) {
+      window.assistant = this;
+      window.Range = Range;
+    }
   }
 
   undo() {
     console.log(`undo [${this._delta.lines.join('\\n')}]`)
     this._assistedInput = true;
     this.editor.session.undoChanges([this._delta], false);
+    this._assistedInput = false;
   }
 
-  replace(replacement) {
-    console.log(`replacing [${this._delta.lines[0]}] with [${replacement.replace('\n', '\\n')}]`)
+  // Since we want to do all assisted changes in one single edit
+  // bundle them all into one text + optional range of text to be replaced
+  // Range row is relative to current statement, not the whole document
+  replace(replacement, aceRange) {
+    console.log(`replacing [${this._delta.lines[0]}] with [${replacement.replaceAll('\n', '\\n')}]`)
     this._assistedInput = true;
     this.editor.session.undoChanges([this._delta], false);
-    this._assistedInput = true;
-    this.editor.insert(replacement);
-    this.parser = this.parser.expression.test(this.parser.text.slice(0, -1) + replacement);
+    if (aceRange) {
+      this.editor.session.replace(aceRange, replacement);
+      // Todo: Update parser and possibly statement list to reflect replacement
+      // Consider multiple changes by assistants, e.g. prefix-addition + indentation
+      // Consider changes that cross multiple statements, e.g. goes outside parser text buffer
+      this.parser = this.parser.expression.test(this.editor.getValue());
+    }
+    else {
+      this.editor.insert(replacement);
+      // Trusts that delta is a single character input
+      // Todo: use this._delta to cope with multiple characters
+      // Consider changes that cross multiple statements, e.g. goes outside parser text buffer
+      this.parser = this.parser.expression.test(this.editor.getValue());
+    }
+    this._assistedInput = false;
   }
 
   _change(delta) {
     this._delta = delta;
     const change = delta.lines.join('\n');
-    console.log(delta, this.parser.text.replace('\n', '\\n'), this._assistedInput);
+    // console.log(delta, this.parser.text.replaceAll('\n', '\\n'), this._assistedInput);
     if (this._assistedInput) {
       // Assisted input, e.g. indentation rules, should pass through
-      this._assistedInput = undefined;
       return;
     }
     if (change.length !== 1) {
