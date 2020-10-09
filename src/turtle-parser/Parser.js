@@ -51,6 +51,14 @@ export class Parser {
     return this.parent ? this.parent.fullName() + `.${this.expression.name}` : this.expression.name;
   }
 
+  hasParent(name) {
+    return this.expression.name === name ? true : this.parent && this.parent.hasParent(name);
+  }
+
+  justCompleted(name) {
+    return this.collect(p => p.satisfied && p.text.length > 0).pop().hasParent(name);
+  }
+
   toString() {
     return this.collect(p => p.expression.terminal === false || ! p.valid || ! p.satisfied)
     .map(p =>

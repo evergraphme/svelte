@@ -1,5 +1,6 @@
 import { turtle } from '../turtle-parser';
 import { indent } from './indent-assist';
+import { shortcut } from './shortcut-assist';
 const ace = require('ace-custom-element/dist/index.umd.js');
 
 /*
@@ -99,6 +100,7 @@ export class TurtleAssistant {
         return;
       }
       indent(this.parser, this);
+      shortcut(this.parser, this);
       // Parse a single statement at a time
       if (this.parser.satisfied) {
         // push statement to stack

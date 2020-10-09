@@ -1,10 +1,3 @@
-/*
-  parser.text
-  parser.text.length
-  parser.expression.name
-  parser.satisfied
-*/
-
 function get(parser, path, property) {
   const pathArray = path.split('.');
   let current = parser;
@@ -43,7 +36,7 @@ function getAll(parser, name, property) {
   return result;
 }
 
-export const indent = function(parser, actionable) {
+export const indent = function(parser, assistant) {
   const char = parser.text[parser.text.length - 1];
   const subject = get(parser, 'statement.or.triples.sequence.subject', 'text');
   const objectLists = getAll(parser, 'objectList');
@@ -51,22 +44,17 @@ export const indent = function(parser, actionable) {
   // Subject just finished and the user typed a whitespace
   if (char === ' ' && parser.text.length === subject.length + 1) {
     // Replace latest entry with indentation
-    actionable.replace('\n  ');
+    assistant.replace('\n  ');
   }
   // Statement finished by entering the last dot
   else if (char === '.' && parser.satisfied) {
     // Replace latest entry with added newline
-    actionable.replace('.\n');
-  }
-  // Object just finished and the user typed a space (finish with dot automatically)
-  else if (char === ' ' && get(parser, 'statement.or.triples', 'satisfied')) {
-    // Replace latest entry with added newline
-    actionable.replace(' .\n');
+    assistant.replace('.\n');
   }
   // Object just finished and the user typed a semi-colon
   else if (char === ';' && get(parser, 'statement.or.triples', 'satisfied')) {
     // Replace latest entry with added newline
-    actionable.replace(';\n  ');
+    assistant.replace(';\n  ');
   }
   // (first) Object just finished and the user typed a comma
   // Last satisfied contains: objectList.object
@@ -81,7 +69,7 @@ export const indent = function(parser, actionable) {
     const startColumn = 2 + get(parser, 'statement.or.triples.sequence.predicateObjectList.verb', 'text').length;
     const object = get(lastObjectList, 'object', 'text');
     const currentLineIndex = parser.text.split('\n').length - 1;
-    actionable.replace(`\n    ${object},\n    `, {
+    assistant.replace(`\n    ${object},\n    `, {
       start: {
         row: currentLineIndex,
         column: startColumn,
@@ -98,11 +86,11 @@ export const indent = function(parser, actionable) {
     && parser.collect(p => p.accepting && p.fullName().endsWith('.objectList.zeroOrMore.sequence.object')).length > 0
   ) {
     // Not first object, just indent
-    actionable.replace(',\n    ');
+    assistant.replace(',\n    ');
   }
   // Leading whitespace on line
   else if (char === ' ' && parser.text.length === 1) {
     // Undo
-    actionable.undo();
+    assistant.undo();
   }
 }
