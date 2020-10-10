@@ -46,6 +46,9 @@ export const indent = function(parser, assistant) {
     // Replace latest entry with indentation
     assistant.replace('\n  ');
   }
+  // Accept single space after predicate
+  else if (char === ' ' && parser.collect(p => p.expression.terminal === false && p.valid && p.satisfied).pop().fullName().indexOf('.verb') > 0) {
+  }
   // Statement finished by entering the last dot
   else if (char === '.' && parser.satisfied) {
     // Replace latest entry with added newline
@@ -88,8 +91,8 @@ export const indent = function(parser, assistant) {
     // Not first object, just indent
     assistant.replace(',\n    ');
   }
-  // Leading whitespace on line
-  else if (char === ' ' && parser.text.length === 1) {
+  // Any other whitespace is ignored
+  else if (/\s/.test(char)) {
     // Undo
     assistant.undo();
   }
