@@ -67,21 +67,6 @@ export class Parser {
     .join('\n');
   }
 
-  justStarted(parents = []) {
-    let result = [];
-    const next = parents.concat(this);
-    if (this.expression.terminal === false && this.valid && this.text.length === 1) {
-      result = [next.map(p => p.expression.name).join('.')];
-    }
-    if (Array.isArray(this.children)) {
-      result = result.concat(this.children.map(p => p.justStarted(next)).filter(l => l.length > 0).flat());
-    }
-    else if (this.children) {
-      result = result.concat(this.children.justStarted(next));
-    }
-    return result;
-  }
-
   // Get currently active part of sequences
   //collect(p => p.expression.name === 'sequence' && p.accepting).map(p => p.children[p.index].fullName())
 
@@ -92,5 +77,10 @@ export class Parser {
       result.unshift(this);
     }
     return result;
+  }
+
+  // Convenince method to check if a certain expression is accepting input
+  someAccepting(name) {
+    return this.collect(p => p.accepting && p.expression.name === name).length > 0
   }
 }

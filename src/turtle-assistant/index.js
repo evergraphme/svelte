@@ -1,7 +1,11 @@
+import { Changeset, parseNextInput } from './changeset';
+import { Statement } from './statement';
 import { turtle } from '../turtle-parser';
-import { indent } from './indent-assist';
-import { shortcut } from './shortcut-assist';
+import { all as indentationRules } from './indent-assist';
+import { all as shortcutRules } from './shortcut-assist';
 const ace = require('ace-custom-element/dist/index.umd.js');
+
+const assistants = indentationRules.concat(shortcutRules);
 
 /*
   Provides structured assistance when editing turtle,
@@ -53,7 +57,7 @@ export class TurtleAssistant {
   // bundle them all into one text + optional range of text to be replaced
   // Range row is relative to current statement, not the whole document
   replace(replacement, aceRange) {
-    console.log(`replacing [${this._delta.lines[0]}] with [${replacement.replaceAll('\n', '\\n')}]`)
+    console.log(`replacing ... with [${replacement.replaceAll('\n', '\\n')}]`)
     this._assistedInput = true;
     this.editor.session.undoChanges([this._delta], false);
     if (aceRange) {
@@ -73,9 +77,16 @@ export class TurtleAssistant {
     this._assistedInput = false;
   }
 
+  currentStatementStartRow() {
+    return this.statements.map(s => s.rowCount).reduce((acc, cur) => {
+      return acc + cur;
+    }, 0);
+  }
+
   _change(delta) {
     this._delta = delta;
     const change = delta.lines.join('\n');
+    let changeset;
     // console.log(delta, this.parser.text.replaceAll('\n', '\\n'), this._assistedInput);
     if (this._assistedInput) {
       // Assisted input, e.g. indentation rules, should pass through
@@ -90,24 +101,22 @@ export class TurtleAssistant {
       return;
     }
     if (delta.action === 'insert') {
-      const accepted = this.parser.push(change);
-      if (!accepted) {
-        // Undo input not accepted by parser
-        console.log('not accepted by parser, undoed');
-        this.undo(delta);
-        // Reset parser, it is broken after not accepting a char
-        this.parser = this.parser.expression.test(this.parser.text);
-        return;
-      }
-      indent(this.parser, this);
-      shortcut(this.parser, this);
-      // Parse a single statement at a time
-      if (this.parser.satisfied) {
-        // push statement to stack
-        // remove trailing slash that we trust indentation to have added
-        this.statements.push(this.parser.text.slice(0, -1));
-        this.parser = this.parser.expression.test('');
-      }
+      changeset = new Changeset({
+        parser: this.parser,
+        change,
+        startRow: this.currentStatementStartRow(),
+      })
+      // const accepted = this.parser.push(change);
+      // if (!accepted) {
+      //   // Undo input not accepted by parser
+      //   console.log('not accepted by parser, undoed');
+      //   this.undo(delta);
+      //   // Reset parser, it is broken after not accepting a char
+      //   this.parser = this.parser.expression.test(this.parser.text);
+      //   return;
+      // }
+      // indent(this.parser, this);
+      // shortcut(this.parser, this);
     }
     else if (delta.action === 'remove') {
       if (this.parser.text.length > 0) {
@@ -119,6 +128,38 @@ export class TurtleAssistant {
         this.parser = this.parser.expression.test(this.statements.pop());
       }
     }
+
+    while(changeset.parser.accepting && changeset.nextChar()) {
+      parseNextInput(changeset, assistants);
+    }
+    if (!changeset.parser.accepting) {
+      console.log('not accepted by parser, undoed');
+      this.undo(delta);
+      return;
+    }
+    if (changeset.originalChange !== changeset.change) {
+      const newText = [...changeset.statements.map(s => s.text), changeset.change].join('\n');
+      console.log(`changed [${changeset.originalChange.replaceAll('\n', '\\n')}] to [${newText.replaceAll('\n', '\\n')}]`)
+      // Replace text in editor
+      this.replace(
+        newText,
+        {
+          start: {
+            row: changeset.startRow,
+            column: 0,
+          },
+          end: {
+            row: delta.start.row,
+            column: delta.start.column,
+          },
+        }
+      );
+      // Todo: Might need to remove statements that were part of the changeset
+      if (changeset.statements.length > 0) {
+        this.statements = this.statements.concat(changeset.statements);
+      }
+    }
+    this.parser = changeset.parser;
     // editor.insert("Something cool");
     // editor.selection.getCursor();
     // editor.session.replace(new ace.Range(0, 0, 1, 1), "new text");
