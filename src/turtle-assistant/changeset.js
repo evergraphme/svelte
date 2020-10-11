@@ -74,7 +74,7 @@ export class Changeset {
     }));
     // Remove completed statement from change/parser
     this.change = this.change.substring(this.parser.text.length);
-    console.log(`new statement [${this.parser.text.replaceAll('\n', '\\n')}], remaining change [${this.change.replaceAll('\n', '\\n')}]`);
+    console.log(`new statement [${this.parser.text.replace(/\n/g, '\\n')}], remaining change [${this.change.replace(/\n/g, '\\n')}]`);
     this.parser = this.parser.expression.test('');
   }
 }
