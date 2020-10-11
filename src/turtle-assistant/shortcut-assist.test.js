@@ -6,7 +6,7 @@ describe('statement', () => {
   test('finish statement with space', () => {
     const changeset = new Changeset({
       parser: turtle.turtleDoc.test(':me\n  :do :good'),
-      change: ' ',
+      input: ' ',
     });
 
     shortcut.finishStatementWithSpace(changeset, () => {});

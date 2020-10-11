@@ -6,13 +6,13 @@ import { Statement } from './statement';
 * document is always re-parsed as indentation/semantics might have changed.
 */
 export class Changeset {
-  constructor({ parser, change, startRow = 0 }) {
+  constructor({ parser, wanted, input, startRow = 0 }) {
     // this.parser.text keeps track of how far we have parsed
     this.parser = parser.expression.test(parser.text);
     // String of the remainder of the document to be parsed
     // Contains this.parser.text (already parsed for current statement)
     // Does not contain already parsed statements
-    this.change = change.length === 1 ? this.parser.text + change : change;
+    this.change = input ? this.parser.text + input : wanted;
     this.originalChange = this.change;
     // Already parsed statements
     this.statements = [];

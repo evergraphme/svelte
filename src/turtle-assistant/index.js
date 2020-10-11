@@ -103,29 +103,26 @@ export class TurtleAssistant {
     if (delta.action === 'insert') {
       changeset = new Changeset({
         parser: this.parser,
-        change,
+        input: change,
         startRow: this.currentStatementStartRow(),
-      })
-      // const accepted = this.parser.push(change);
-      // if (!accepted) {
-      //   // Undo input not accepted by parser
-      //   console.log('not accepted by parser, undoed');
-      //   this.undo(delta);
-      //   // Reset parser, it is broken after not accepting a char
-      //   this.parser = this.parser.expression.test(this.parser.text);
-      //   return;
-      // }
-      // indent(this.parser, this);
-      // shortcut(this.parser, this);
+      });
     }
     else if (delta.action === 'remove') {
       if (this.parser.text.length > 0) {
         // Reset parser, it does not support stepping backwards
-        this.parser = this.parser.expression.test(this.parser.text.slice(0, -1));
+        // this.parser = this.parser.expression.test(this.parser.text.slice(0, -1));
+        changeset = new Changeset({
+          parser: this.parser.expression.test(this.parser.text.slice(0, -1)),
+          wanted: this.parser.text.slice(0, -1),
+          startRow: this.currentStatementStartRow(),
+        });
       }
       else {
         // Pop the previous statement
-        this.parser = this.parser.expression.test(this.statements.pop());
+        console.log('todo: cannot pass statement lines just yet');
+        this.undo(delta);
+        return;
+        // this.parser = this.parser.expression.test(this.statements.pop());
       }
     }
 
