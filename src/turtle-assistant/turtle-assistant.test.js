@@ -21,7 +21,7 @@ describe('TurtleAssistant', () => {
     const editor = element.editor;
     const assistant = new TurtleAssistant({editor});
     editor.insert(':');
-    editor.insert(' ');
+    editor.insert(' '); // Indent after subject
     expect(assistant.parser.text).toBe(':\n  ');
   });
 
@@ -29,13 +29,29 @@ describe('TurtleAssistant', () => {
     const element = document.getElementById('ace');
     const editor = element.editor;
     const assistant = new TurtleAssistant({editor});
-    editor.insert(':');
+    editor.insert(':'); // Subject
+    editor.insert(' '); // Indent after subject
+    editor.insert(':'); // Predicate
     editor.insert(' ');
-    editor.insert(':');
-    editor.insert(' ');
-    editor.insert(':');
-    editor.insert(' ');
+    editor.insert(':'); // Object
+    editor.insert(' '); // Complete statement with space
     expect(editor.getValue()).toBe(':\n  : : .\n');
     expect(assistant.parser.text).toBe('');
+  });
+
+  test('Semi-colon after comma', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert(':'); // Subject
+    editor.insert(' '); // Indent after subject
+    editor.insert(':'); // Predicate
+    editor.insert(' ');
+    editor.insert(':'); // Object
+    editor.insert(','); // Indent after comma
+    editor.insert(':'); // Object
+    editor.insert(';'); // Indent after semi-colon
+    expect(editor.getValue()).toBe(':\n  :\n    :,\n    :;\n  ');
+    expect(assistant.parser.text).toBe(':\n  :\n    :,\n    :;\n  ');
   });
 });

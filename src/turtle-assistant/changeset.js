@@ -63,7 +63,7 @@ export class Changeset {
   add(text) {
     // console.log(`add [${text}]`);
     this.change = this.change + text;
-    this.parser.push(text);
+    this.parser.push(this.nextChar() + text);
   }
 
   // Helper function while parsing
@@ -74,7 +74,7 @@ export class Changeset {
     }));
     // Remove completed statement from change/parser
     this.change = this.change.substring(this.parser.text.length);
-    console.log(`new statement [${this.parser.text.replace(/\n/g, '\\n')}], remaining change [${this.change.replace(/\n/g, '\\n')}]`);
+    // console.log(`new statement [${this.parser.text.replace(/\n/g, '\\n')}], remaining change [${this.change.replace(/\n/g, '\\n')}]`);
     this.parser = this.parser.expression.test('');
   }
 }

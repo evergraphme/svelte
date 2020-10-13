@@ -57,7 +57,7 @@ export class TurtleAssistant {
   // bundle them all into one text + optional range of text to be replaced
   // Range row is relative to current statement, not the whole document
   replace(replacement, aceRange) {
-    console.log(`replacing ... with [${replacement.replace(/\n/g, '\\n')}]`)
+    // console.log(`replacing with [${replacement.replace(/\n/g, '\\n')}]`, aceRange);
     this._assistedInput = true;
     this.editor.session.undoChanges([this._delta], false);
     if (aceRange) {
@@ -136,7 +136,7 @@ export class TurtleAssistant {
     }
     if (changeset.originalChange !== changeset.change) {
       const newText = [...changeset.statements.map(s => s.text), changeset.change].join('\n');
-      console.log(`changed [${changeset.originalChange.replace(/\n/g, '\\n')}] to [${newText.replace(/\n/g, '\\n')}]`)
+      // console.log(`changed [${changeset.originalChange.replace(/\n/g, '\\n')}] to [${newText.replace(/\n/g, '\\n')}]`)
       // Replace text in editor
       this.replace(
         newText,
