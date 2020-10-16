@@ -113,6 +113,14 @@ describe('TurtleAssistant', () => {
     expect(assistant.statements.length).toBe(0);
   });
 
-  // Typing an invalid character inside a previous statement is undoed, but the cursor moves
-  // Typing a valid character inside a previous statement works, but the cursor moves to the next statement
+  test('no extra whitespace for object lists', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert(':s\n  :p\n    :o1,\n    :o2 .');
+    expect(editor.getValue()).toBe(':s\n  :p\n    :o1,\n    :o2 .\n');
+    expect(assistant.parser.text).toBe('');
+    expect(assistant.statements.length).toBe(1);
+    expect(assistant.statements[0].text).toBe(':s\n  :p\n    :o1,\n    :o2 .');
+  });
 });

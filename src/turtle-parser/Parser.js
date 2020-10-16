@@ -80,7 +80,8 @@ export class Parser {
   }
 
   // Convenince method to check if a certain expression is accepting input
+  // and has already accepted input
   someAccepting(name) {
-    return this.collect(p => p.accepting && p.expression.name === name).length > 0
+    return this.collect(p => p.accepting && p.expression.name === name && p.text.length > 0).length > 0
   }
 }
