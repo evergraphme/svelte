@@ -60,26 +60,11 @@ export class Parser {
   }
 
   toString() {
-    return this.collect(p => p.expression.terminal === false || ! p.valid || ! p.satisfied)
+    return this.collect(p => p.expression.terminal !== true || ! p.valid || ! p.satisfied)
     .map(p =>
       `${''.padStart(p.level()*2)}${p.valid ? p.satisfied ? '√' : '⋯' : 'x'}`
       + ` ${p.expression.name} [${p.text.replace(/\n/g, '\\n')}]`)
     .join('\n');
-  }
-
-  justStarted(parents = []) {
-    let result = [];
-    const next = parents.concat(this);
-    if (this.expression.terminal === false && this.valid && this.text.length === 1) {
-      result = [next.map(p => p.expression.name).join('.')];
-    }
-    if (Array.isArray(this.children)) {
-      result = result.concat(this.children.map(p => p.justStarted(next)).filter(l => l.length > 0).flat());
-    }
-    else if (this.children) {
-      result = result.concat(this.children.justStarted(next));
-    }
-    return result;
   }
 
   // Get currently active part of sequences
@@ -92,5 +77,10 @@ export class Parser {
       result.unshift(this);
     }
     return result;
+  }
+
+  // Convenince method to check if a certain expression is accepting input
+  someAccepting(name) {
+    return this.collect(p => p.accepting && p.expression.name === name).length > 0
   }
 }
