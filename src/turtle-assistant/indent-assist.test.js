@@ -1,6 +1,6 @@
 import * as indent from './indent-assist';
 import { turtle } from '../turtle-parser';
-import { Changeset } from './changeset';
+import { Changeset, parseNextInput } from './changeset';
 
 describe('statement', () => {
   test('indent after subject', () => {
@@ -65,6 +65,22 @@ describe('statement', () => {
     indent.indentAfterComma(changeset, () => { changeset.parser.push(changeset.nextChar()); });
     expect(changeset.change).toBe(':me\n  :dislike :bananas;\n  :like\n    :apples,\n    :oranges,\n    ');
   });
+
+  test('disallow whitespace unless accepted by indentation rules', () => {
+    // processed [ ] => [:i\n   ] <= 3 spaces!!
+    const changeset = new Changeset({
+      parser: turtle.turtleDoc.test(':ws\n  '),
+      input: ' \n\t',
+    });
+    parseNextInput(changeset, indent.all);
+    parseNextInput(changeset, indent.all);
+    parseNextInput(changeset, indent.all);
+    expect(changeset.parser.text).toBe(':ws\n  ');
+    expect(changeset.change).toBe(':ws\n  ');
+  });
+
+  test.todo('turn tab/newline to space where applicable');
+  // Tabs seems to be accepted??
 
   // Seems leading whitespace is not accepted by parser, move this test elsewhere?
   test.todo('prohibit leading space on newline');

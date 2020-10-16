@@ -4,10 +4,11 @@ export const finishStatementWithSpace = function(changeset, next) {
   if (
     /\s/.test(changeset.nextChar())
     && changeset.change.length === changeset.parser.text.length + 1
-    && changeset.parser.justCompleted('object')
+    && changeset.parser.someAccepting('object')
   ) {
     // Replace latest entry with added newline
     changeset.replaceChar(' .\n');
+    return;
   }
   next();
 }

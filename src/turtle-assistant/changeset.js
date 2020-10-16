@@ -102,3 +102,40 @@ export const parseNextInput = function(changeset, rules) {
   }
   next();
 }
+
+export const fromAceDelta = function(statements, parser, delta) {
+  let changeset;
+
+  // Retrieve all statments that are affected by the change
+  let statementStart = statements.length;
+  let startRow = statements.length > 0
+    ? statements[statements.length - 1].endRow + 1
+    : 0;
+  for (; delta.start.row < startRow; statementStart = statementStart - 1) {
+    if (statements[statementStart-1].startRow <= delta.start.row) {
+      startRow = statements[statementStart-1].startRow
+    }
+  }
+  const affectedStatements = statements.slice(statementStart);
+  const lines = affectedStatements.map(s => s.text.split('\n')).concat(parser.text.split('\n')).flat();
+  const now = lines.join('\n');
+  const deltaStartRow = delta.start.row - startRow;
+  const deltaEndRow = delta.end.row - startRow;
+  const startIndex = lines.slice(0, deltaStartRow).map(l => l.length).reduce((a,c) => {return a+c;}, 0) + deltaStartRow + delta.start.column;
+  const endIndex = lines.slice(0, deltaEndRow).map(l => l.length).reduce((a,c) => {return a+c;}, 0) + deltaEndRow + delta.end.column;
+  let change;
+  if (delta.action === 'insert') {
+    change = now.substring(0, startIndex) + delta.lines.join('\n') + now.substring(startIndex);
+  }
+  else if (delta.action === 'remove') {
+    change = now.substring(0, startIndex) + now.substring(endIndex);
+  }
+
+  changeset = new Changeset({
+    parser: parser,
+    wanted: change,
+    startRow: startRow,
+  });
+
+  return changeset;
+}

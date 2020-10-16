@@ -8,6 +8,26 @@ export const indentAfterSubject = function(changeset, next) {
   next();
 }
 
+export const indentAfterPredicate = function(changeset, next) {
+  // Subject just finished and the user typed a whitespace
+  if (/\s/.test(changeset.nextChar()) && changeset.parser.someAccepting('verb')) {
+    // Replace latest entry with indentation
+    changeset.replaceChar(' ');
+    return;
+  }
+  next();
+}
+
+export const indentAfterObject = function(changeset, next) {
+  // Subject just finished and the user typed a whitespace
+  if (/\s/.test(changeset.nextChar()) && changeset.parser.someAccepting('object')) {
+    // Replace latest entry with indentation
+    changeset.replaceChar(' ');
+    return;
+  }
+  next();
+}
+
 export const indentAfterDot = function(changeset, next) {
   next();
   // Statement finished by entering the last dot
@@ -54,12 +74,15 @@ export const blockWhitespace = function(changeset, next) {
   ) {
     changeset.replaceFromStart(
         changeset.parser.text.substring(0, changeset.parser.text.length));
+    return;
   }
   next();
 }
 
 export const all = [
   indentAfterSubject,
+  indentAfterPredicate,
+  indentAfterObject,
   indentAfterDot,
   indentAfterSemicolon,
   indentAfterComma,

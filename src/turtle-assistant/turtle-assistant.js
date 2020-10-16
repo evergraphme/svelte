@@ -1,11 +1,11 @@
-import { Changeset, parseNextInput } from './changeset';
+import { Changeset, parseNextInput, fromAceDelta } from './changeset';
 import { Statement } from './statement';
 import { turtle } from '../turtle-parser';
 import { all as indentationRules } from './indent-assist';
 import { all as shortcutRules } from './shortcut-assist';
 const ace = require('ace-custom-element/dist/index.umd.js');
 
-const assistants = indentationRules.concat(shortcutRules);
+const assistants = shortcutRules.concat(indentationRules);
 
 /*
   Provides structured assistance when editing turtle,
@@ -77,57 +77,20 @@ export class TurtleAssistant {
     this._assistedInput = false;
   }
 
-  currentStatementStartRow() {
-    return this.statements.map(s => s.rowCount).reduce((acc, cur) => {
-      return acc + cur;
-    }, 0);
-  }
-
   _change(delta) {
     this._delta = delta;
-    const change = delta.lines.join('\n');
-    let changeset;
-    // console.log(delta, this.parser.text.replace(/\n/g, '\\n'), this._assistedInput);
+    // console.log(delta, `[${this.parser.text.replace(/\n/g, '\\n')}]`, this._assistedInput, this.statements.length);
     if (this._assistedInput) {
       // Assisted input, e.g. indentation rules, should pass through
       return;
     }
-    if (change.length !== 1) {
-      // We only handle single-character input for now due to parser limitation
-      console.log('non-single-character-input undoed');
-      this.undo(delta);
-      // Reset parser, it is broken after not accepting a char
-      this.parser = this.parser.expression.test(this.parser.text);
-      return;
-    }
-    if (delta.action === 'insert') {
-      changeset = new Changeset({
-        parser: this.parser,
-        input: change,
-        startRow: this.currentStatementStartRow(),
-      });
-    }
-    else if (delta.action === 'remove') {
-      if (this.parser.text.length > 0) {
-        // Reset parser, it does not support stepping backwards
-        // this.parser = this.parser.expression.test(this.parser.text.slice(0, -1));
-        changeset = new Changeset({
-          parser: this.parser.expression.test(this.parser.text.slice(0, -1)),
-          wanted: this.parser.text.slice(0, -1),
-          startRow: this.currentStatementStartRow(),
-        });
-      }
-      else {
-        // Pop the previous statement
-        console.log('todo: cannot pass statement lines just yet');
-        this.undo(delta);
-        return;
-        // this.parser = this.parser.expression.test(this.statements.pop());
-      }
-    }
+
+    const changeset = fromAceDelta(this.statements, this.parser, delta);
 
     while(changeset.parser.accepting && changeset.nextChar()) {
+      const nextChar = changeset.nextChar();
       parseNextInput(changeset, assistants);
+      // console.log(`processed [${nextChar}] => [${changeset.parser.text.replace(/\n/g, '\\n')}]`);
     }
     if (!changeset.parser.accepting) {
       console.log('not accepted by parser, undoed');
@@ -136,8 +99,15 @@ export class TurtleAssistant {
     }
     if (changeset.originalChange !== changeset.change) {
       const newText = [...changeset.statements.map(s => s.text), changeset.change].join('\n');
-      // console.log(`changed [${changeset.originalChange.replace(/\n/g, '\\n')}] to [${newText.replace(/\n/g, '\\n')}]`)
       // Replace text in editor
+      const currentStatementRow = (this.statements.length > 0 ? this.statements[this.statements.length - 1].endRow + 1 : 0);
+      const endColumn = this.parser.text.lastIndexOf('\n') >= 0
+        ? this.parser.text.length - this.parser.text.lastIndexOf('\n')
+        : this.parser.text.length;
+      const endRow = currentStatementRow + this.parser.text.split('\n').length - 1;
+      // console.log(`changed [${changeset.originalChange.replace(/\n/g, '\\n')}] to [${newText.replace(/\n/g, '\\n')}]\n`
+      //   + `parser:[${this.parser.text.replace(/\n/g, '\\n')}] length=${this.parser.text.length} lastnewline=${this.parser.text.lastIndexOf('\n')}`
+      //   + ` statementcount:${this.statements.length} currentStatementRow:${currentStatementRow} endRow:${endRow} endColumn:${endColumn}`);
       this.replace(
         newText,
         {
@@ -146,22 +116,17 @@ export class TurtleAssistant {
             column: 0,
           },
           end: {
-            row: delta.start.row,
-            column: delta.start.column,
+            // Replace to the end
+            row: endRow,
+            column: endColumn,
           },
         }
       );
       // Todo: Might need to remove statements that were part of the changeset
       if (changeset.statements.length > 0) {
-        this.statements = this.statements.concat(changeset.statements);
+        this.statements = this.statements.filter(s => s.endRow < changeset.startRow).concat(changeset.statements);
       }
     }
     this.parser = changeset.parser;
-    // editor.insert("Something cool");
-    // editor.selection.getCursor();
-    // editor.session.replace(new ace.Range(0, 0, 1, 1), "new text");
-    // editor.session.remove(new ace.Range(0, 0, 1, 1));
-    // editor.session.insert({row:1,column:2}, "new text");
-    // editor.undo();
   }
 }
