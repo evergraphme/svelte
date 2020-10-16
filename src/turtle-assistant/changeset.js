@@ -7,13 +7,14 @@ import { Statement } from './statement';
 */
 export class Changeset {
   constructor({ parser, wanted, input, startRow = 0 }) {
-    // this.parser.text keeps track of how far we have parsed
-    this.parser = parser.expression.test(parser.text);
     // String of the remainder of the document to be parsed
     // Contains this.parser.text (already parsed for current statement)
     // Does not contain already parsed statements
-    this.change = input ? this.parser.text + input : wanted;
+    this.change = input ? parser.text + input : wanted;
     this.originalChange = this.change;
+    // this.parser.text keeps track of how far we have parsed
+    // If the change is in the middle of the text, reparse from the beginning
+    this.parser = parser.expression.test(this.change.indexOf(parser.text) === 0 ? parser.text : '');
     // Already parsed statements
     this.statements = [];
     // Row in the document this change starts on

@@ -89,4 +89,30 @@ describe('TurtleAssistant', () => {
     expect(assistant.statements[0].text).toBe(':i\n  :can :split .');
     expect(assistant.statements[1].text).toBe(':you\n  :may :paste .');
   });
+
+  test('Undo invalid paste', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert(':i\n  :can :paste .');
+    editor.session.insert({row:0,column:2}, ' :toomuch');
+    expect(editor.getValue()).toBe(':i\n  :can :paste .\n');
+    expect(assistant.parser.text).toBe('');
+    expect(assistant.statements.length).toBe(1);
+    expect(assistant.statements[0].text).toBe(':i\n  :can :paste .');
+  });
+
+  test('Type in the middle of the current statement', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert(':i\n  :can :paste');
+    editor.session.insert({row:1,column:2}, 'x');
+    expect(editor.getValue()).toBe(':i\n  x:can :paste');
+    expect(assistant.parser.text).toBe(':i\n  x:can :paste');
+    expect(assistant.statements.length).toBe(0);
+  });
+
+  // Typing an invalid character inside a previous statement is undoed, but the cursor moves
+  // Typing a valid character inside a previous statement works, but the cursor moves to the next statement
 });
