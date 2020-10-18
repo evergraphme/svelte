@@ -337,7 +337,7 @@ export const sparqlPrefix = new Expression({
   // "PREFIX" PNAME_NS IRIREF
   name: 'sparqlPrefix',
   terminal: false,
-  lazy_expression: () => ebnf.wsequence([ebnf.caseInsensitiveString('PREFIX'), IRIREF]),
+  lazy_expression: () => ebnf.wsequence([ebnf.caseInsensitiveString('PREFIX'), PNAME_NS, IRIREF]),
 });
 export const sparqlBase = new Expression({
   // "BASE" IRIREF

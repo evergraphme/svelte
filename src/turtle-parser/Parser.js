@@ -60,7 +60,8 @@ export class Parser {
   }
 
   toString() {
-    return this.collect(p => p.expression.terminal !== true || ! p.valid || ! p.satisfied)
+    const matcher = p => p.expression.terminal !== true || ! p.valid || ! p.satisfied;
+    return this.collect(p => p.collect(matcher).length > 0)
     .map(p =>
       `${''.padStart(p.level()*2)}${p.valid ? p.satisfied ? '√' : '⋯' : 'x'}`
       + ` ${p.expression.name} [${p.text.replace(/\n/g, '\\n')}]`)

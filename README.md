@@ -25,3 +25,7 @@ subject
 * After an object, type space once to add another object (add `,\n    `)
 * After an object, type space twice to add another predicate (add `;\n  `)
 * Backspace after one of the above removes all the text and moves the cursor back to just after the object
+
+# Alternatives
+
+* https://perfectkb.github.io/yate/
