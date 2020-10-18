@@ -47,7 +47,7 @@ export class TurtleAssistant {
   }
 
   undo() {
-    console.log(`undo [${this._delta.lines.join('\\n')}]`)
+    // console.log(`undo [${this._delta.lines.join('\\n')}]`)
     this._assistedInput = true;
     this.editor.session.undoChanges([this._delta], false);
     this._assistedInput = false;
@@ -93,7 +93,7 @@ export class TurtleAssistant {
       // console.log(`processed [${nextChar}] => [${changeset.parser.text.replace(/\n/g, '\\n')}]`);
     }
     if (!changeset.parser.accepting) {
-      console.log('not accepted by parser, undoed');
+      // console.log('not accepted by parser, undoed');
       this.undo(delta);
       return;
     }
@@ -122,10 +122,7 @@ export class TurtleAssistant {
           },
         }
       );
-      // Todo: Might need to remove statements that were part of the changeset
-      if (changeset.statements.length > 0) {
-        this.statements = this.statements.filter(s => s.endRow < changeset.startRow).concat(changeset.statements);
-      }
+      this.statements = this.statements.filter(s => s.endRow < changeset.startRow).concat(changeset.statements);
     }
     this.parser = changeset.parser;
   }

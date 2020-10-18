@@ -6,12 +6,14 @@ import { Statement } from './statement';
 * document is always re-parsed as indentation/semantics might have changed.
 */
 export class Changeset {
-  constructor({ parser, wanted, input, startRow = 0 }) {
+  constructor({ parser, wanted, input, startRow = 0, inserting = true }) {
     // String of the remainder of the document to be parsed
     // Contains this.parser.text (already parsed for current statement)
     // Does not contain already parsed statements
     this.change = input ? parser.text + input : wanted;
     this.originalChange = this.change;
+    // Inserting or removing?
+    this.inserting = inserting;
     // this.parser.text keeps track of how far we have parsed
     // If the change is in the middle of the text, reparse from the beginning
     this.parser = parser.expression.test(this.change.indexOf(parser.text) === 0 ? parser.text : '');
@@ -50,11 +52,11 @@ export class Changeset {
 
   // Helper function while parsing
   // Replacement pushed to parser without assistance rules
-  replaceFromStart(replacement) {
+  replaceFromStart(replacement, deleteRemainder = false) {
     // console.log(`replaceFromStart [${replacement}]`);
     this.change =
       replacement
-      + this.change.substring(this.parser.text.length + 1);
+      + (deleteRemainder ? '' : this.change.substring(this.parser.text.length + 1));
     // Restart parsing from beginning of statement
     this.parser = this.parser.expression.test(replacement);
   }
@@ -130,12 +132,14 @@ export const fromAceDelta = function(statements, parser, delta) {
   }
   else if (delta.action === 'remove') {
     change = now.substring(0, startIndex) + now.substring(endIndex);
+    // console.log(`remove change=[${change.replace(/\n/g, '\\n')}] startRow=${startRow}`);
   }
 
   changeset = new Changeset({
     parser: parser,
     wanted: change,
     startRow: startRow,
+    inserting: delta.action === 'insert',
   });
 
   return changeset;
