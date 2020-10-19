@@ -1,6 +1,7 @@
 import * as indent from './indent-assist';
 import { turtle } from '../turtle-parser';
 import { Changeset, parseNextInput } from './changeset';
+import { assistants } from '.';
 
 describe('statement', () => {
   test('indent after subject', () => {
@@ -8,7 +9,7 @@ describe('statement', () => {
       parser: turtle.turtleDoc.test(':me'),
       input: ' ',
     });
-    indent.indentAfterSubject(changeset, () => {});
+    changeset.parseAllInput(assistants);
     expect(changeset.change).toBe(':me\n  ');
   });
 
@@ -17,8 +18,8 @@ describe('statement', () => {
       parser: turtle.turtleDoc.test(':me\n  :like :apples '),
       input: '.',
     });
-    indent.indentAfterDot(changeset, () => { changeset.parser.push(changeset.nextChar()); });
-    expect(changeset.change).toBe(':me\n  :like :apples .\n');
+    changeset.parseAllInput(assistants);
+    expect(changeset.replacement()).toBe(':me\n  :like :apples .\n');
   });
 
   test('indent after semicolon/new predicate', () => {
@@ -26,7 +27,7 @@ describe('statement', () => {
       parser: turtle.turtleDoc.test(':me\n  :like :apples'),
       input: ';',
     });
-    indent.indentAfterSemicolon(changeset, () => { changeset.parser.push(changeset.nextChar()); });
+    changeset.parseAllInput(assistants);
     expect(changeset.change).toBe(':me\n  :like :apples;\n  ');
   });
 
@@ -35,7 +36,7 @@ describe('statement', () => {
       parser: turtle.turtleDoc.test(':me\n  :like :apples'),
       input: ',',
     });
-    indent.indentAfterComma(changeset, () => { changeset.parser.push(changeset.nextChar()); });
+    changeset.parseAllInput(assistants);
     expect(changeset.change).toBe(':me\n  :like\n    :apples,\n    ');
   });
 
@@ -44,7 +45,7 @@ describe('statement', () => {
       parser: turtle.turtleDoc.test(':me\n  :like\n    :apples,\n    :oranges'),
       input: ',',
     });
-    indent.indentAfterComma(changeset, () => { changeset.parser.push(changeset.nextChar()); });
+    changeset.parseAllInput(assistants);
     expect(changeset.change).toBe(':me\n  :like\n    :apples,\n    :oranges,\n    ');
   });
 
@@ -53,7 +54,7 @@ describe('statement', () => {
       parser: turtle.turtleDoc.test(':me\n  :like :apples;\n  :dislike :orange;\n  :favor :bananas'),
       input: ',',
     });
-    indent.indentAfterComma(changeset, () => { changeset.parser.push(changeset.nextChar()); });
+    changeset.parseAllInput(assistants);
     expect(changeset.change).toBe(':me\n  :like :apples;\n  :dislike :orange;\n  :favor\n    :bananas,\n    ');
   });
 
@@ -62,7 +63,7 @@ describe('statement', () => {
       parser: turtle.turtleDoc.test(':me\n  :dislike :bananas;\n  :like\n    :apples,\n    :oranges'),
       input: ',',
     });
-    indent.indentAfterComma(changeset, () => { changeset.parser.push(changeset.nextChar()); });
+    changeset.parseAllInput(assistants);
     expect(changeset.change).toBe(':me\n  :dislike :bananas;\n  :like\n    :apples,\n    :oranges,\n    ');
   });
 
@@ -72,9 +73,7 @@ describe('statement', () => {
       parser: turtle.turtleDoc.test(':ws\n  '),
       input: ' \n\t',
     });
-    parseNextInput(changeset, indent.all);
-    parseNextInput(changeset, indent.all);
-    parseNextInput(changeset, indent.all);
+    changeset.parseAllInput(assistants);
     expect(changeset.parser.text).toBe(':ws\n  ');
     expect(changeset.change).toBe(':ws\n  ');
   });

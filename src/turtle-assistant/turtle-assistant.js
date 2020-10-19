@@ -1,11 +1,8 @@
 import { Changeset, parseNextInput, fromAceDelta } from './changeset';
 import { Statement } from './statement';
 import { turtle } from '../turtle-parser';
-import { all as indentationRules } from './indent-assist';
-import { all as shortcutRules } from './shortcut-assist';
+import { assistants } from '.';
 const ace = require('ace-custom-element/dist/index.umd.js');
-
-const assistants = shortcutRules.concat(indentationRules);
 
 /*
   Provides structured assistance when editing turtle,
@@ -80,12 +77,7 @@ export class TurtleAssistant {
     }
 
     const changeset = fromAceDelta(this.statements, this.parser, delta);
-
-    while(changeset.parser.accepting && changeset.nextChar()) {
-      const nextChar = changeset.nextChar();
-      parseNextInput(changeset, assistants);
-      // console.log(`processed [${nextChar}] => [${changeset.parser.text.replace(/\n/g, '\\n')}]`);
-    }
+    changeset.parseAllInput(assistants);
     if (!changeset.parser.accepting) {
       // console.log('not accepted by parser, undoed');
       this.undo(delta);

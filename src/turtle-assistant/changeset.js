@@ -82,6 +82,12 @@ export class Changeset {
     this.parser.push(this.nextChar() + text);
   }
 
+  parseAllInput(assistants) {
+    while(this.parser.accepting && this.nextChar()) {
+      parseNextInput(this, assistants);
+    }
+  }
+
   // Helper function while parsing
   completeStatement() {
     this.statements.push(new Statement({
