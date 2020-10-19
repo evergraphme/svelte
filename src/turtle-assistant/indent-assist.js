@@ -1,6 +1,6 @@
 export const indentAfterSubject = function(changeset, next) {
   // Subject just finished and the user typed a whitespace
-  if (/\s/.test(changeset.nextChar()) && changeset.parser.someAccepting('subject')) {
+  if (/\s/.test(changeset.nextChar()) && changeset.parser.someAccepting('subject') && !changeset.parser.someAccepting('directive')) {
     // Replace latest entry with indentation
     changeset.replaceChar('\n  ');
     return;
@@ -66,11 +66,22 @@ export const indentAfterComma = function(changeset, next) {
   next();
 }
 
+const prefixOrBaseKeyword = function(changeset) {
+  return changeset.parser.text === '@prefix'
+    || changeset.parser.text === '@base'
+    || changeset.parser.text.toLowerCase() === 'prefix'
+    || changeset.parser.text.toLowerCase() === 'base';
+}
+
 export const blockWhitespace = function(changeset, next) {
   if (
     /\s/.test(changeset.nextChar())
     && !changeset.parser.someAccepting('verb')
     && !changeset.parser.someAccepting('object')
+    && !prefixOrBaseKeyword(changeset)
+    && !(changeset.parser.someAccepting('directive') && changeset.parser.someAccepting('PNAME_NS'))
+    // directive > sparqlPrefix > string satisfied
+    // directive > prefixID > string satisfied
   ) {
     changeset.replaceFromStart(
         changeset.parser.text.substring(0, changeset.parser.text.length));

@@ -6,7 +6,19 @@ import { Statement } from './statement';
 * document is always re-parsed as indentation/semantics might have changed.
 */
 export class Changeset {
-  constructor({ parser, wanted, input, startRow = 0, inserting = true }) {
+  constructor({ parser, original, wanted, input, startRow = 0, inserting = true }) {
+    // Already parsed statements
+    this.statements = [];
+    // Original text before change
+    this.original = original ? original : parser.text;
+    // Row in the document this change starts on
+    this.startRow = startRow;
+    // Row in the document this change ended on (before the changes are applied)
+    this.endRow = startRow + this.original.split('\n').length - 1;
+    // Column in the document this change ended on (before the changes are applied)
+    this.endColumn = this.original.lastIndexOf('\n') >= 0
+      ? this.original.length - this.original.lastIndexOf('\n')
+      : this.original.length;
     // String of the remainder of the document to be parsed
     // Contains this.parser.text (already parsed for current statement)
     // Does not contain already parsed statements
@@ -17,10 +29,6 @@ export class Changeset {
     // this.parser.text keeps track of how far we have parsed
     // If the change is in the middle of the text, reparse from the beginning
     this.parser = parser.expression.test(this.change.indexOf(parser.text) === 0 ? parser.text : '');
-    // Already parsed statements
-    this.statements = [];
-    // Row in the document this change starts on
-    this.startRow = startRow;
   }
 
   // Next character to parse
@@ -37,6 +45,11 @@ export class Changeset {
     return this.statements.map(s => s.rowCount).reduce((acc, cur) => {
       return acc + cur;
     }, 0);
+  }
+
+  // Replacement text to execute changeset, including parsed statements
+  replacement() {
+    return [...this.statements.map(s => s.text), this.change].join('\n');
   }
 
   // Helper function while parsing
@@ -79,6 +92,21 @@ export class Changeset {
     this.change = this.change.substring(this.parser.text.length);
     // console.log(`new statement [${this.parser.text.replace(/\n/g, '\\n')}], remaining change [${this.change.replace(/\n/g, '\\n')}]`);
     this.parser = this.parser.expression.test('');
+  }
+
+  // Return affected range in Ace editor format
+  aceDelta() {
+    return {
+      start: {
+        row: this.startRow,
+        column: 0,
+      },
+      end: {
+        // Replace to the end
+        row: this.endRow,
+        column: this.endColumn,
+      },
+    }
   }
 }
 
@@ -136,7 +164,8 @@ export const fromAceDelta = function(statements, parser, delta) {
   }
 
   changeset = new Changeset({
-    parser: parser,
+    parser,
+    original: now,
     wanted: change,
     startRow: startRow,
     inserting: delta.action === 'insert',

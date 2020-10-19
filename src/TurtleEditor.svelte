@@ -22,19 +22,19 @@
       editor.session.setUseWorker(false);
       editor.selection.clearSelection();
       editor.setOptions({
-        enableLiveAutocompletion: [{
-          getCompletions: function(editor, session, pos, prefix, callback) {
-            // console.log('complete me', prefix);
-            callback(null, [
-              {
-                  // caption: 'xyz',
-                  value: prefix + 'more',
-                  // score: 3,
-                  // meta: 'hello',
-              },
-            ]);
-          }
-        }],
+        // enableLiveAutocompletion: [{
+        //   getCompletions: function(editor, session, pos, prefix, callback) {
+        //     // console.log('complete me', prefix);
+        //     callback(null, [
+        //       {
+        //           // caption: 'xyz',
+        //           value: prefix + 'more',
+        //           // score: 3,
+        //           // meta: 'hello',
+        //       },
+        //     ]);
+        //   }
+        // }],
         fontSize: '14pt',
       });
 

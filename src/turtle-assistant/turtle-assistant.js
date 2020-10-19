@@ -62,16 +62,10 @@ export class TurtleAssistant {
     this.editor.session.undoChanges([this._delta], false);
     if (aceRange) {
       this.editor.session.replace(aceRange, replacement);
-      // Todo: Update parser and possibly statement list to reflect replacement
-      // Consider multiple changes by assistants, e.g. prefix-addition + indentation
-      // Consider changes that cross multiple statements, e.g. goes outside parser text buffer
       this.parser = this.parser.expression.test(this.editor.getValue());
     }
     else {
       this.editor.insert(replacement);
-      // Trusts that delta is a single character input
-      // Todo: use this._delta to cope with multiple characters
-      // Consider changes that cross multiple statements, e.g. goes outside parser text buffer
       this.parser = this.parser.expression.test(this.editor.getValue());
     }
     this._assistedInput = false;
@@ -98,30 +92,7 @@ export class TurtleAssistant {
       return;
     }
     if (changeset.originalChange !== changeset.change) {
-      const newText = [...changeset.statements.map(s => s.text), changeset.change].join('\n');
-      // Replace text in editor
-      const currentStatementRow = (this.statements.length > 0 ? this.statements[this.statements.length - 1].endRow + 1 : 0);
-      const endColumn = this.parser.text.lastIndexOf('\n') >= 0
-        ? this.parser.text.length - this.parser.text.lastIndexOf('\n')
-        : this.parser.text.length;
-      const endRow = currentStatementRow + this.parser.text.split('\n').length - 1;
-      // console.log(`changed [${changeset.originalChange.replace(/\n/g, '\\n')}] to [${newText.replace(/\n/g, '\\n')}]\n`
-      //   + `parser:[${this.parser.text.replace(/\n/g, '\\n')}] length=${this.parser.text.length} lastnewline=${this.parser.text.lastIndexOf('\n')}`
-      //   + ` statementcount:${this.statements.length} currentStatementRow:${currentStatementRow} endRow:${endRow} endColumn:${endColumn}`);
-      this.replace(
-        newText,
-        {
-          start: {
-            row: changeset.startRow,
-            column: 0,
-          },
-          end: {
-            // Replace to the end
-            row: endRow,
-            column: endColumn,
-          },
-        }
-      );
+      this.replace(changeset.replacement(), changeset.aceDelta());
       this.statements = this.statements.filter(s => s.endRow < changeset.startRow).concat(changeset.statements);
     }
     this.parser = changeset.parser;
