@@ -66,26 +66,28 @@ export const indentAfterComma = function(changeset, next) {
   next();
 }
 
-const prefixOrBaseKeyword = function(changeset) {
-  return changeset.parser.text === '@prefix'
-    || changeset.parser.text === '@base'
-    || changeset.parser.text.toLowerCase() === 'prefix'
-    || changeset.parser.text.toLowerCase() === 'base';
-}
-
 export const blockWhitespace = function(changeset, next) {
-  if (
-    /\s/.test(changeset.nextChar())
-    && !changeset.parser.someAccepting('verb')
-    && !changeset.parser.someAccepting('object')
-    && !prefixOrBaseKeyword(changeset)
-    && !(changeset.parser.someAccepting('directive') && changeset.parser.someAccepting('PNAME_NS'))
-    // directive > sparqlPrefix > string satisfied
-    // directive > prefixID > string satisfied
-  ) {
-    changeset.replaceFromStart(
-        changeset.parser.text.substring(0, changeset.parser.text.length));
-    return;
+  // Invalid whitespace blocked by parser
+  // Indentation rules above take care of weird whitespace
+  // The rest should be managable by only allowing a single space in all other places
+  if (/\s/.test(changeset.nextChar())) {
+    if (changeset.parser.text.length === 0) {
+      // Remove leading whitespace
+      changeset.replaceFromStart(
+          changeset.parser.text.substring(0, changeset.parser.text.length));
+      return;
+    }
+    if (/\s/.test(changeset.lastChar())) {
+      // Only one whitespace at a time
+      changeset.replaceFromStart(
+          changeset.parser.text.substring(0, changeset.parser.text.length));
+      return;
+    }
+    if (!/ /.test(changeset.nextChar())) {
+      // Only space
+      changeset.replaceChar(' ');
+      return;
+    }
   }
   next();
 }

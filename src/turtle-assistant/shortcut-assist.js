@@ -64,6 +64,23 @@ export const spaceTwiceForNewPredicate = function(changeset, next) {
   next();
 }
 
+export const finishDirectiveStatementWithWhitespace = function(changeset, next) {
+  // IRIREF just finished and the user typed whitespace (finish with dot automatically)
+  // Only do this on the last character entered to avoid messing up pasted text chunks
+  if (
+    /^\s$/.test(remainder(changeset))
+    && changeset.inserting
+    && changeset.parser.someAccepting('IRIREF')
+    && changeset.parser.someAccepting('directive')
+  ) {
+    // console.debug(`finishStatementWithNewline [${remainder(changeset)}]`);
+    // Replace latest entry with dot and indentation
+    changeset.replaceChar(' .\n');
+    return;
+  }
+  next();
+}
+
 export const backspaceToDeleteEndOfStatement = function(changeset, next) {
   // User deleted some text and only whitespace and dot remains of statement
   // Delete whitespace and dot to match shortcut to end statement
@@ -118,11 +135,29 @@ export const backspaceToMoveBackFromNewObject = function(changeset, next) {
   next();
 }
 
+export const backspaceToDeleteEndOfDirectiveStatement = function(changeset, next) {
+  // User deleted some text and only whitespace and dot remains of statement
+  // Delete whitespace and dot to match shortcut to end statement
+  if (
+    /^[\s.]+$/.test(remainder(changeset))
+    && !changeset.inserting
+    && changeset.parser.someAccepting('directive')
+  ) {
+    // console.debug(`backspaceToDeleteEndOfStatement [${remainder(changeset)}]`);
+    // Replace latest entry with semi-colon and indentation
+    changeset.replaceFromStart(changeset.parser.text, true);
+    return;
+  }
+  next();
+}
+
 export const all = [
   finishStatementWithNewline,
   spaceOnceForNewObject,
   spaceTwiceForNewPredicate,
+  finishDirectiveStatementWithWhitespace,
   backspaceToDeleteEndOfStatement,
   backspaceToMoveBackFromNewPredicate,
   backspaceToMoveBackFromNewObject,
+  backspaceToDeleteEndOfDirectiveStatement,
 ]

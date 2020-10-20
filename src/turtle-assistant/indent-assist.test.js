@@ -78,6 +78,17 @@ describe('statement', () => {
     expect(changeset.change).toBe(':ws\n  ');
   });
 
+  test('disallow leading whitespace but accept further input', () => {
+    const changeset = new Changeset({
+      parser: turtle.turtleDoc.test(''),
+      input: ' \n\t',
+    });
+    changeset.parseAllInput(assistants);
+    expect(changeset.parser.text).toBe('');
+    expect(changeset.parser.accepting).toBe(true);
+    expect(changeset.change).toBe('');
+  });
+
   test.todo('turn tab/newline to space where applicable');
   // Tabs seems to be accepted??
 

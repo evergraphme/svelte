@@ -45,6 +45,18 @@ describe('statement', () => {
     expect(changeset2.statements.length).toBe(0);
   });
 
+  test('Whitespace to complete prefix/base statement', () => {
+    const changeset = new Changeset({
+      parser: turtle.turtleDoc.test(''),
+      input: '@prefix : <>\t',
+    });
+    changeset.parseAllInput(assistants);
+    expect(changeset.replacement()).toBe('@prefix : <> .\n');
+    expect(changeset.parser.text).toBe('');
+    expect(changeset.statements.length).toBe(1);
+    expect(changeset.statements[0].text).toBe('@prefix : <> .');
+  });
+
   describe('Shortcuts with editor testing', () => {
     beforeEach(done => {
       const element = document.createElement('ace-editor');
@@ -91,6 +103,17 @@ describe('statement', () => {
       editor.session.remove({start: {row: 3, column: 3}, end: {row: 3, column: 4}});
       expect(editor.getValue()).toBe(':s\n  :p :o');
       expect(assistant.parser.text).toBe(':s\n  :p :o');
+      expect(assistant.statements.length).toBe(0);
+    });
+
+    test('Backspace to delete end of last directive statement', () => {
+      const element = document.getElementById('ace');
+      const editor = element.editor;
+      const assistant = new TurtleAssistant({editor});
+      editor.insert('@base <> .\n');
+      editor.session.remove({start: {row: 0, column: 10}, end: {row: 1, column: 0}});
+      expect(editor.getValue()).toBe('@base <>');
+      expect(assistant.parser.text).toBe('@base <>');
       expect(assistant.statements.length).toBe(0);
     });
   })

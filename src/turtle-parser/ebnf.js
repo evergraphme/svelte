@@ -81,6 +81,10 @@ export function sequence(expressions, ws = false) {
       if (parser.index >= parser.children.length) {
         return false;
       }
+      if (ws && /\s/.test(char) && parser.children[parser.index].text.length === 0) {
+        // Accept leading whitespace
+        return true;
+      }
       let accepted = parser.children[parser.index].push(char);
       if (!parser.children[parser.index].valid) {
         parser.valid = false;

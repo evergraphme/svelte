@@ -109,4 +109,48 @@ describe('TurtleAssistant', () => {
     expect(assistant.statements.length).toBe(1);
     expect(assistant.statements[0].text).toBe(':s\n  :p\n    :o1,\n    :o2 .');
   });
+
+  test('prefixID statement', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert('@prefix : <> .');
+    expect(editor.getValue()).toBe('@prefix : <> .\n');
+    expect(assistant.parser.text).toBe('');
+    expect(assistant.statements.length).toBe(1);
+    expect(assistant.statements[0].text).toBe('@prefix : <> .');
+  });
+
+  test('sparqlPrefix statement', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert('PREFIX : <>');
+    expect(editor.getValue()).toBe('PREFIX : <>\n');
+    expect(assistant.parser.text).toBe('');
+    expect(assistant.statements.length).toBe(1);
+    expect(assistant.statements[0].text).toBe('PREFIX : <>');
+  });
+
+  test('base statement', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert('@base <> .');
+    expect(editor.getValue()).toBe('@base <> .\n');
+    expect(assistant.parser.text).toBe('');
+    expect(assistant.statements.length).toBe(1);
+    expect(assistant.statements[0].text).toBe('@base <> .');
+  });
+
+  test('sparqlBase statement', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert('BASE <>');
+    expect(editor.getValue()).toBe('BASE <>\n');
+    expect(assistant.parser.text).toBe('');
+    expect(assistant.statements.length).toBe(1);
+    expect(assistant.statements[0].text).toBe('BASE <>');
+  });
 });

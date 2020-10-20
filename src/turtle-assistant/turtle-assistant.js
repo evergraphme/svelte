@@ -79,7 +79,7 @@ export class TurtleAssistant {
     const changeset = fromAceDelta(this.statements, this.parser, delta);
     changeset.parseAllInput(assistants);
     if (!changeset.parser.accepting) {
-      // console.log('not accepted by parser, undoed');
+      // console.log('not accepted by parser, undoed', changeset.parser.toString());
       this.undo(delta);
       return;
     }

@@ -367,7 +367,7 @@ export const statement = new Expression({
   // directive | triples '.'
   name: 'statement',
   terminal: false,
-  lazy_expression: () => ebnf.wsequence([ebnf.or([directive, triples]), ebnf.string('.')]),
+  lazy_expression: () => ebnf.or([directive, ebnf.wsequence([triples, ebnf.string('.')])]),
 });
 export const turtleDoc = new Expression({
   // statement*

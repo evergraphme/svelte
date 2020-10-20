@@ -84,12 +84,15 @@ export class Changeset {
 
   parseAllInput(assistants) {
     while(this.parser.accepting && this.nextChar()) {
+      // const next = this.nextChar();
       parseNextInput(this, assistants);
+      // console.log(`parsed [${next.replace(/\n/g, '\\n')}] => [${this.parser.text.replace(/\n/g, '\\n')}] accepting=${this.parser.accepting}`);
     }
   }
 
   // Helper function while parsing
   completeStatement() {
+    // console.log(`completeStatement [${this.parser.text.trim().replace(/\n/g, '\\n')}]`)
     this.statements.push(new Statement({
       startRow: this.startRow + this.currentRow(),
       text: this.parser.text.trim(),
