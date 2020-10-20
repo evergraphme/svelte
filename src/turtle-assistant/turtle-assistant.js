@@ -85,8 +85,8 @@ export class TurtleAssistant {
     }
     if (changeset.originalChange !== changeset.change) {
       this.replace(changeset.replacement(), changeset.aceDelta());
-      this.statements = this.statements.filter(s => s.endRow < changeset.startRow).concat(changeset.statements);
     }
+    this.statements = this.statements.filter(s => s.endRow < changeset.startRow).concat(changeset.statements);
     this.parser = changeset.parser;
   }
 }

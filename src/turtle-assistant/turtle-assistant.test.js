@@ -153,4 +153,16 @@ describe('TurtleAssistant', () => {
     expect(assistant.statements.length).toBe(1);
     expect(assistant.statements[0].text).toBe('BASE <>');
   });
+
+  test('deleting a full statement', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert(': : : .\n');
+    expect(assistant.parser.text).toBe('');
+    expect(assistant.statements.length).toBe(1);
+    editor.session.remove({start: {row: 0, column: 0}, end: {row: 2, column: 0}});
+    expect(assistant.parser.text).toBe('');
+    expect(assistant.statements.length).toBe(0);
+  });
 });
