@@ -11,6 +11,22 @@
   </head>
 
   <body>
-    <turtle-editor name="Me">What</turtle-editor>
+    <turtle-editor name="Me" content="
+@base &lt;http://example.org/> .
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/> .
+@prefix rel: &lt;http://www.perceive.net/schemas/relationship/> .
+
+&lt;#green-goblin>
+    rel:enemyOf &lt;#spiderman> ;
+    a foaf:Person ;
+    foaf:name 'Green Goblin' .
+
+    &lt;#spiderman>
+    rel:enemyOf &lt;#green-goblin> ;
+    a foaf:Person ;
+    foaf:name 'Spiderman', 'Человек-паук'@ru .
+"/>
   </body>
 </html>

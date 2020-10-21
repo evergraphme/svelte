@@ -11,6 +11,7 @@
   const streamParser = new N3.StreamParser();
 
   let editorElement;
+  export let content;
 
   function whenConnected() {
     if (!editorElement.isConnected) {
@@ -37,7 +38,7 @@
         // }],
         fontSize: '14pt',
       });
-
+      editor.insert(content);
       // editor.session.selection.on('changeCursor', function(e) {
       //   console.log(e);
       // });
@@ -65,5 +66,6 @@
   theme="ace/theme/chrome"
   mode="ace/mode/turtle"
   bind:this={editorElement}
-></ace-editor>
+>
+</ace-editor>
   <!-- value="@base &lt;http://example.org/> .&#13;@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#> .&#13;@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#> .&#13;@prefix foaf: &lt;http://xmlns.com/foaf/0.1/> .&#13;@prefix rel: &lt;http://www.perceive.net/schemas/relationship/> .&#13;&#13;&lt;#green-goblin>&#13;    rel:enemyOf &lt;#spiderman> ;&#13;    a foaf:Person ;    # in the context of the Marvel universe&#13;    foaf:name &quot;Green Goblin&quot; .&#13;&#13;&lt;#spiderman>&#13;    rel:enemyOf &lt;#green-goblin> ;&#13;    a foaf:Person ;&#13;    foaf:name &quot;Spiderman&quot;, &quot;Человек-паук&quot;@ru ." -->
