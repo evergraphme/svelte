@@ -30,11 +30,13 @@ const ace = require('ace-custom-element/dist/index.umd.js');
   * Statements - list of finished statements with reference to text positions
 */
 export class TurtleAssistant {
-  constructor({editor}) {
+  constructor({editor, changeHandler}) {
     this.editor = editor;
+    this.changeHandler = changeHandler;
     // this._assistedInput = false;
     this.parser = turtle.turtleDoc.test('');
     this.statements = [];
+    this.currentQuads = [];
 
     this.editor.session.on('change', this._change.bind(this));
     if (window) {
@@ -59,11 +61,13 @@ export class TurtleAssistant {
     this.editor.session.undoChanges([this._delta], false);
     if (aceRange) {
       this.editor.session.replace(aceRange, replacement);
-      this.parser = this.parser.expression.test(this.editor.getValue());
+      // Not sure why the below was needed? Safeguard? Messes a bit with logging/notifications
+      // this.parser = this.parser.reset(this.editor.getValue());
     }
     else {
       this.editor.insert(replacement);
-      this.parser = this.parser.expression.test(this.editor.getValue());
+      // Not sure why the below was needed? Safeguard? Messes a bit with logging/notifications
+      // this.parser = this.parser.reset(this.editor.getValue());
     }
     this._assistedInput = false;
   }
@@ -86,7 +90,19 @@ export class TurtleAssistant {
     if (changeset.originalChange !== changeset.change) {
       this.replace(changeset.replacement(), changeset.aceDelta());
     }
+    const replacedQuads = this.statements.filter(s => s.startRow >= changeset.startRow).map(s => s.quads).concat(this.currentQuads).flat();
+    const changeQuads = changeset.statements.map(s => s.quads).concat(changeset.currentQuads).flat();
+    const removedQuads = replacedQuads.filter(q1 => !changeQuads.some(q2 => q1.equals(q2)));
+    const newQuads = changeQuads.filter(q1 => !replacedQuads.some(q2 => q1.equals(q2)));
+    // console.log('new', newQuads, 'removed', removedQuads, 'change', changeQuads);
     this.statements = this.statements.filter(s => s.endRow < changeset.startRow).concat(changeset.statements);
+    this.currentQuads = changeset.currentQuads;
     this.parser = changeset.parser;
+    if (this.changeHandler && (newQuads.length > 0 || removedQuads.length > 0)) {
+      this.changeHandler({
+        added: newQuads,
+        removed: removedQuads,
+      });
+    }
   }
 }

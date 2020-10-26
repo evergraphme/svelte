@@ -124,7 +124,20 @@ export const STRING_LITERAL_LONG_QUOTE = new Expression({
   // '"""' (('"' | '""')? ([^"\] | ECHAR | UCHAR))* '"""'
   name: 'STRING_LITERAL_LONG_QUOTE',
   terminal: true,
-  lazy_expression: () => ebnf.sequence([ebnf.string('"""'), ebnf.zeroOrMore(ebnf.sequence([ebnf.optional(ebnf.or([ebnf.string('"'), ebnf.string('""')])), ebnf.or([ebnf.characterClass(/[^"\\]/), ECHAR, UCHAR])])), ebnf.string('"""')]),
+  lazy_expression: () =>
+    ebnf.sequence([
+      ebnf.string('"""'),
+      ebnf.zeroOrMore(
+        ebnf.sequence([
+          ebnf.optional(
+            ebnf.or([
+              ebnf.string('"'),
+              ebnf.string('""')])),
+          ebnf.or([
+            ebnf.characterClass(/[^"\\]/),
+            ECHAR,
+            UCHAR])])),
+      ebnf.string('"""')]),
 });
 export const STRING_LITERAL_LONG_SINGLE_QUOTE = new Expression({
   // "'''" (("'" | "''")? ([^'\] | ECHAR | UCHAR))* "'''"
@@ -136,7 +149,7 @@ export const STRING_LITERAL_SINGLE_QUOTE = new Expression({
   // "'" ([^#x27#x5C#xA#xD] | ECHAR | UCHAR)* "'" /* #x27=' #x5C=\ #xA=new line #xD=carriage return */
   name: 'STRING_LITERAL_SINGLE_QUOTE',
   terminal: true,
-  lazy_expression: () => ebnf.sequence([ebnf.string("'"), ebnf.zeroOrMore(ebnf.characterClass(/[^\x27\x5C\xA\xD]/), ECHAR, UCHAR), ebnf.string("'")]),
+  lazy_expression: () => ebnf.sequence([ebnf.string("'"), ebnf.zeroOrMore(ebnf.or([ebnf.characterClass(/[^\x27\x5C\xA\xD]/), ECHAR, UCHAR])), ebnf.string("'")]),
 });
 export const STRING_LITERAL_QUOTE = new Expression({
   // '"' ([^#x22#x5C#xA#xD] | ECHAR | UCHAR)* '"' /* #x22=" #x5C=\ #xA=new line #xD=carriage return */

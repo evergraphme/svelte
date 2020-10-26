@@ -9,6 +9,8 @@ export class Changeset {
   constructor({ parser, original, wanted, input, startRow = 0, inserting = true }) {
     // Already parsed statements
     this.statements = [];
+    // Quads emitted from current statement
+    this.currentQuads = [];
     // Original text before change
     this.original = original ? original : parser.text;
     // Row in the document this change starts on
@@ -28,7 +30,10 @@ export class Changeset {
     this.inserting = inserting;
     // this.parser.text keeps track of how far we have parsed
     // If the change is in the middle of the text, reparse from the beginning
-    this.parser = parser.expression.test(this.change.indexOf(parser.text) === 0 ? parser.text : '');
+    this.parser = parser.clone({
+      text: this.change.indexOf(parser.text) === 0 ? parser.text : '',
+      callback: (quad) => { this.currentQuads.push(quad); },
+    });
   }
 
   // Next character to parse
@@ -66,12 +71,15 @@ export class Changeset {
   // Helper function while parsing
   // Replacement pushed to parser without assistance rules
   replaceFromStart(replacement, deleteRemainder = false) {
-    // console.log(`replaceFromStart [${replacement}]`);
+    // console.log(`replaceFromStart [${this.change.substring(0, this.parser.text.length + 1).replace(/\n/g, '\\n')}]=>[${replacement.replace(/\n/g, '\\n')}]`);
     this.change =
       replacement
       + (deleteRemainder ? '' : this.change.substring(this.parser.text.length + 1));
     // Restart parsing from beginning of statement
-    this.parser = this.parser.expression.test(replacement);
+    if (this.parser.text !== '' && this.parser.text.indexOf(replacement) !== 0) {
+      this.currentQuads = [];
+      this.parser = this.parser.reset(replacement);
+    }
   }
 
   // Helper function while parsing
@@ -96,11 +104,13 @@ export class Changeset {
     this.statements.push(new Statement({
       startRow: this.startRow + this.currentRow(),
       text: this.parser.text.trim(),
+      quads: this.currentQuads,
     }));
     // Remove completed statement from change/parser
     this.change = this.change.substring(this.parser.text.length);
     // console.log(`new statement [${this.parser.text.replace(/\n/g, '\\n')}], remaining change [${this.change.replace(/\n/g, '\\n')}]`);
-    this.parser = this.parser.expression.test('');
+    this.parser = this.parser.reset('');
+    this.currentQuads = [];
   }
 
   // Return affected range in Ace editor format

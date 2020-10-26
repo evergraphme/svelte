@@ -31,6 +31,19 @@ Try it out at https://evergraphme.github.io/turtle-editor/
     a foaf:Person ;
     foaf:name 'Spiderman', 'Человек-паук'@ru .
 "/>
+
+    <script type="text/javascript">
+      document.querySelector('turtle-editor').$on('change', (e) => {
+        let output = '';
+        for (let quad of e.detail.added) {
+          output = output + `Added ${quad.subject.value} ${quad.predicate.value} ${quad.object.value} .\n`;
+        }
+        for (let quad of e.detail.removed) {
+          output = output + `Removed ${quad.subject.value} ${quad.predicate.value} ${quad.object.value} .\n`;
+        }
+        console.log(output);
+      })
+    </script>
   </body>
 </html>
 ```
