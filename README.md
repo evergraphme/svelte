@@ -15,8 +15,7 @@ Try it out at https://evergraphme.github.io/turtle-editor/
   </head>
 
   <body>
-    <turtle-editor content="
-@base &lt;http://example.org/> .
+    <turtle-editor content="@base &lt;http://example.org/> .
 @prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#> .
 @prefix foaf: &lt;http://xmlns.com/foaf/0.1/> .
@@ -30,9 +29,16 @@ Try it out at https://evergraphme.github.io/turtle-editor/
     &lt;#spiderman>
     rel:enemyOf &lt;#green-goblin> ;
     a foaf:Person ;
-    foaf:name 'Spiderman', 'Человек-паук'@ru .
-"/>
+    foaf:name 'Spiderman', 'Человек-паук'@ru ."/>
+  </body>
+</html>
+```
 
+## Subscribing to updates
+
+The editor will post updates as soon as new quads are parsed (or removed). See example below on how to be notified. The event contains two properties, `added` and `removed`, each an array of added or removed [quads](https://rdf.js.org/data-model-spec/#quad-interface).
+
+```
     <script type="text/javascript">
       document.querySelector('turtle-editor').$on('change', (e) => {
         let output = '';
@@ -45,17 +51,15 @@ Try it out at https://evergraphme.github.io/turtle-editor/
         console.log(output);
       })
     </script>
-  </body>
-</html>
 ```
 
 ## Retrieving RDF
 
-* `document.querySelector('turtle-editor').dataset()` returns a [RDF/JS dataset](https://rdf.js.org/dataset-spec/#dataset-interface)
+`document.querySelector('turtle-editor').dataset()` returns a [RDF/JS dataset](https://rdf.js.org/dataset-spec/#dataset-interface) with all parsed quads in the document.
 
 ## Direct access to text editor
 
-The Turtle Editor is currently using the [Ace text editor](https://ace.c9.io/) which can be accessed directly via `document.querySelector('turtle-editor').editorElement.editor`. This can be utilized to modify styling or access the text directly.
+The editor is currently built a top of the [Ace text editor](https://ace.c9.io/) which can be accessed directly via `document.querySelector('turtle-editor').editorElement.editor`. This can be utilized to modify styling or access the text directly.
 
 # Input assistance
 
