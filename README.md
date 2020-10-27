@@ -57,6 +57,24 @@ The editor will post updates as soon as new quads are parsed (or removed). See e
 
 `document.querySelector('turtle-editor').dataset()` returns a [RDF/JS dataset](https://rdf.js.org/dataset-spec/#dataset-interface) with all parsed quads in the document.
 
+## Styling
+
+Example CSS
+
+```css
+turtle-editor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: auto;
+}
+turtle-editor::part(editor) {
+  height:100%;
+}
+```
+
 ## Direct access to text editor
 
 The editor is currently built a top of the [Ace text editor](https://ace.c9.io/) which can be accessed directly via `document.querySelector('turtle-editor').editorElement.editor`. This can be utilized to modify styling or access the text directly.

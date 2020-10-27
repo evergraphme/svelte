@@ -56,17 +56,13 @@
 
 <style media="screen">
   #editor {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: auto;
+    /*height: 100%;*/
   }
 </style>
 
 <ace-editor
   id="editor"
+  part="editor"
   theme="ace/theme/chrome"
   mode="ace/mode/turtle"
   bind:this={editorElement}

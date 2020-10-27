@@ -9,9 +9,49 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <base href="https://evergraphme.github.io/turtle-editor/" />
     <script type="text/javascript" src="bundle.js"></script>
+    <style media="screen">
+      turtle-editor {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: auto;
+      }
+      turtle-editor::part(editor) {
+        height:100%;
+      }
+    </style>
   </head>
 
   <body>
-    <turtle-editor name="Me">What</turtle-editor>
+    <turtle-editor name="Me" content="@base &lt;http://example.org/> .
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/> .
+@prefix rel: &lt;http://www.perceive.net/schemas/relationship/> .
+
+&lt;#green-goblin>
+    rel:enemyOf &lt;#spiderman> ;
+    a foaf:Person ;
+    foaf:name 'Green Goblin' .
+
+    &lt;#spiderman>
+    rel:enemyOf &lt;#green-goblin> ;
+    a foaf:Person ;
+    foaf:name 'Spiderman', 'Человек-паук'@ru ."/>
+
+    <script type="text/javascript">
+      document.querySelector('turtle-editor').$on('change', (e) => {
+        let output = '';
+        for (let quad of e.detail.added) {
+          output = output + `Added ${quad.subject.value} ${quad.predicate.value} ${quad.object.value} .\n`;
+        }
+        for (let quad of e.detail.removed) {
+          output = output + `Removed ${quad.subject.value} ${quad.predicate.value} ${quad.object.value} .\n`;
+        }
+        console.log(output);
+      })
+    </script>
   </body>
 </html>
