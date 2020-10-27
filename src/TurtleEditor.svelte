@@ -9,8 +9,9 @@
   require('ace-custom-element/dist/ace/mode-turtle');
 
   const dispatch = createEventDispatcher();
-  let editorElement;
+  export let editorElement;
   export let content;
+  export let dataset;
 
   function whenConnected() {
     if (!editorElement.isConnected) {
@@ -22,6 +23,7 @@
         editor,
         changeHandler: (e) => { dispatch('change', e); }
       });
+      dataset = () => { return assistant.dataset(); }
       editor.session.setUseWorker(false);
       editor.selection.clearSelection();
       editor.setOptions({

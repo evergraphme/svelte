@@ -3,6 +3,7 @@ import { Statement } from './statement';
 import { turtle } from '../turtle-parser';
 import { assistants } from '.';
 const ace = require('ace-custom-element/dist/index.umd.js');
+const rdf = require("rdf-ext");
 
 /*
   Provides structured assistance when editing turtle,
@@ -39,10 +40,16 @@ export class TurtleAssistant {
     this.currentQuads = [];
 
     this.editor.session.on('change', this._change.bind(this));
-    if (window) {
-      window.assistant = this;
-      window.Range = Range;
-    }
+  }
+
+  // Return all current quads wrapped in a dataset
+  dataset() {
+    return rdf.dataset(
+      this
+      .statements
+      .map(s => s.quads)
+      .concat(this.currentQuads)
+      .flat());
   }
 
   undo() {

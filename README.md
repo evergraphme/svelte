@@ -6,6 +6,7 @@ Try it out at https://evergraphme.github.io/turtle-editor/
 
 # Usage
 
+## Embedding
 ```html
 <html>
   <head>
@@ -47,6 +48,14 @@ Try it out at https://evergraphme.github.io/turtle-editor/
   </body>
 </html>
 ```
+
+## Retrieving RDF
+
+* `document.querySelector('turtle-editor').dataset()` returns a [RDF/JS dataset](https://rdf.js.org/dataset-spec/#dataset-interface)
+
+## Direct access to text editor
+
+The Turtle Editor is currently using the [Ace text editor](https://ace.c9.io/) which can be accessed directly via `document.querySelector('turtle-editor').editorElement.editor`. This can be utilized to modify styling or access the text directly.
 
 # Input assistance
 
