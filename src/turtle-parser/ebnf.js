@@ -81,8 +81,18 @@ export function sequence(expressions, ws = false) {
       if (parser.index >= parser.children.length) {
         return false;
       }
+      if (parser.comment) {
+        // Accept all characters, wait for newline
+        parser.comment = char !== '\n';
+        return true;
+      }
       if (ws && /\s/.test(char) && parser.children[parser.index].text.length === 0) {
         // Accept leading whitespace
+        return true;
+      }
+      if (ws && /#/.test(char) && parser.children[parser.index].text.length === 0) {
+        // Accept comment
+        parser.comment = true;
         return true;
       }
       let accepted = parser.children[parser.index].push(char);
@@ -96,6 +106,11 @@ export function sequence(expressions, ws = false) {
       // }
       if (!accepted && ws && /\s/.test(char)) {
         // Accept whitespace between sequence expressions if non-terminal
+        return true;
+      }
+      if (!accepted && ws && /#/.test(char)) {
+        // Accept comment
+        parser.comment = true;
         return true;
       }
       while (parser.index + 1 < parser.children.length && !accepted) {

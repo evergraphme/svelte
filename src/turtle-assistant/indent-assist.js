@@ -67,8 +67,8 @@ export const blockWhitespace = function(changeset, next) {
           changeset.parser.text.substring(0, changeset.parser.text.length));
       return;
     }
-    if (/\s/.test(changeset.lastChar())) {
-      // Only one whitespace at a time
+    if (/\s/.test(changeset.lastChar()) && changeset.parser.collect(p => p.comment).length === 0) {
+      // Only one whitespace at a time (unless in a comment)
       changeset.replaceFromStart(
           changeset.parser.text.substring(0, changeset.parser.text.length));
       return;
@@ -79,8 +79,8 @@ export const blockWhitespace = function(changeset, next) {
           changeset.parser.text.substring(0, changeset.parser.text.length));
       return;
     }
-    if (!/ /.test(changeset.nextChar())) {
-      // Only space
+    if (!/ /.test(changeset.nextChar()) && changeset.parser.collect(p => p.comment).length === 0) {
+      // Only space (unless in a comment)
       changeset.replaceChar(' ');
       return;
     }

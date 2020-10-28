@@ -1,6 +1,10 @@
 import { turtle } from '.';
 
 describe('Parser', () => {
+  test('Comment', () => {
+      expect(turtle.turtleDoc.test('#comment\n<http://example.com>').value()).toBe('http://example.com');
+  });
+
   describe('Map tokens to RDF terms', () => {
     // https://www.w3.org/TR/turtle/#sec-parsing-terms
 
