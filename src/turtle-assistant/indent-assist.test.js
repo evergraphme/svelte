@@ -67,6 +67,15 @@ describe('statement', () => {
     expect(changeset.change).toBe(':me\n  :dislike :bananas;\n  :like\n    :apples,\n    :oranges,\n    ');
   });
 
+  test('indent after comma/new object, even with a space between', () => {
+    const changeset = new Changeset({
+      parser: turtle.turtleDoc.test(''),
+      input: ': : : , :',
+    });
+    changeset.parseAllInput(assistants);
+    expect(changeset.change).toBe(':\n  :\n    :,\n    :');
+  });
+
   test('disallow whitespace unless accepted by indentation rules', () => {
     // processed [ ] => [:i\n   ] <= 3 spaces!!
     const changeset = new Changeset({
@@ -88,10 +97,4 @@ describe('statement', () => {
     expect(changeset.parser.accepting).toBe(true);
     expect(changeset.change).toBe('');
   });
-
-  test.todo('turn tab/newline to space where applicable');
-  // Tabs seems to be accepted??
-
-  // Seems leading whitespace is not accepted by parser, move this test elsewhere?
-  test.todo('prohibit leading space on newline');
 });

@@ -46,6 +46,12 @@ export class Changeset {
     return this.change[this.parser.text.length - 1];
   }
 
+  // Check if upcoming character matches pattern
+  upcoming(pattern) {
+    const match = this.change.substring(this.parser.text.length).match(pattern);
+    return match && match.index === 0;
+  }
+
   currentRow() {
     return this.statements.map(s => s.rowCount).reduce((acc, cur) => {
       return acc + cur;
@@ -59,12 +65,12 @@ export class Changeset {
 
   // Helper function while parsing
   // Replacement pushed to parser without assistance rules
-  replaceChar(replacement) {
+  replaceChar(replacement, deleteRemainder = false) {
     // console.log(`replaceChar [${replacement}]`);
     this.change =
       this.change.substring(0, this.parser.text.length)
       + replacement
-      + this.change.substring(this.parser.text.length + 1);
+      + (deleteRemainder ? '' : this.change.substring(this.parser.text.length + 1));
     this.parser.push(replacement);
   }
 

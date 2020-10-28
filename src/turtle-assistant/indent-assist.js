@@ -18,16 +18,6 @@ export const indentAfterPredicate = function(changeset, next) {
   next();
 }
 
-export const indentAfterObject = function(changeset, next) {
-  // Subject just finished and the user typed a whitespace
-  if (/\s/.test(changeset.nextChar()) && changeset.parser.someAccepting('object')) {
-    // Replace latest entry with indentation
-    changeset.replaceChar(' ');
-    return;
-  }
-  next();
-}
-
 export const indentAfterDot = function(changeset, next) {
   next();
   // Statement finished by entering the last dot
@@ -83,6 +73,12 @@ export const blockWhitespace = function(changeset, next) {
           changeset.parser.text.substring(0, changeset.parser.text.length));
       return;
     }
+    if (changeset.upcoming(/\s+[;,]/) && changeset.parser.someAccepting('object')) {
+      // No extra whitespace after objects (unless a dot is coming)
+      changeset.replaceFromStart(
+          changeset.parser.text.substring(0, changeset.parser.text.length));
+      return;
+    }
     if (!/ /.test(changeset.nextChar())) {
       // Only space
       changeset.replaceChar(' ');
@@ -95,7 +91,6 @@ export const blockWhitespace = function(changeset, next) {
 export const all = [
   indentAfterSubject,
   indentAfterPredicate,
-  indentAfterObject,
   indentAfterDot,
   indentAfterSemicolon,
   indentAfterComma,

@@ -31,14 +31,14 @@ export const spaceOnceForNewObject = function(changeset, next) {
     // console.debug(`spaceOnceForNewObject [${remainder(changeset)}]`);
     if (changeset.parser.collect(p => p.accepting && p.fullName().endsWith('.sequence.object')).length > 0) {
       // This is not the first object, just add indentation
-      changeset.replaceChar(',\n    ');
+      changeset.replaceChar(',\n    ', true);
     }
     else {
       // This is the first object, move object to new line and add indentation
       const object = changeset.parser.collect(p => p.accepting && p.expression.name === 'object')[0];
       changeset.replaceFromStart(
         changeset.parser.text.substring(0, changeset.parser.text.length - object.text.length - 1)
-        + `\n    ${object.text},\n    `);
+        + `\n    ${object.text},\n    `, true);
     }
     return;
   }
@@ -58,7 +58,7 @@ export const spaceTwiceForNewPredicate = function(changeset, next) {
   ) {
     // console.debug(`spaceTwiceForNewPredicate [${remainder(changeset)}]`);
     // Replace latest entry with semi-colon and indentation
-    changeset.replaceFromStart(changeset.parser.text.replace(/\n *([^\s,]+),\n *$/, ' $1;\n  '));
+    changeset.replaceFromStart(changeset.parser.text.replace(/\n *([^\s,]+),\n *$/, ' $1;\n  ', true));
     return;
   }
   next();
