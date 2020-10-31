@@ -25,33 +25,24 @@
   </head>
 
   <body>
-    <turtle-editor name="Me" content="@base &lt;http://example.org/> .
-@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#> .
-@prefix foaf: &lt;http://xmlns.com/foaf/0.1/> .
-@prefix rel: &lt;http://www.perceive.net/schemas/relationship/> .
+    <turtle-editor text="#contents"/>
 
-&lt;#green-goblin>
-    rel:enemyOf &lt;#spiderman> ;
-    a foaf:Person ;
-    foaf:name 'Green Goblin' .
+    <script id="contents" type="text/turtle">
+      @base <http://example.org/> .
+      @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+      @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+      @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+      @prefix rel: <http://www.perceive.net/schemas/relationship/> .
 
-    &lt;#spiderman>
-    rel:enemyOf &lt;#green-goblin> ;
-    a foaf:Person ;
-    foaf:name 'Spiderman', 'Человек-паук'@ru ."/>
+      <#green-goblin>
+        rel:enemyOf <#spiderman> ;
+        a foaf:Person ;
+        foaf:name 'Green Goblin' .
 
-    <script type="text/javascript">
-      document.querySelector('turtle-editor').$on('change', (e) => {
-        let output = '';
-        for (let quad of e.detail.added) {
-          output = output + `Added ${quad.subject.value} ${quad.predicate.value} ${quad.object.value} .\n`;
-        }
-        for (let quad of e.detail.removed) {
-          output = output + `Removed ${quad.subject.value} ${quad.predicate.value} ${quad.object.value} .\n`;
-        }
-        console.log(output);
-      })
+      <#spiderman>
+        rel:enemyOf <#green-goblin> ;
+        a foaf:Person ;
+        foaf:name 'Spiderman', 'Человек-паук'@ru .
     </script>
   </body>
 </html>
