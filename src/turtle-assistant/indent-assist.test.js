@@ -97,4 +97,14 @@ describe('statement', () => {
     expect(changeset.parser.accepting).toBe(true);
     expect(changeset.change).toBe('');
   });
+
+  test('cope with dot ending without space', () => {
+    const changeset = new Changeset({
+      parser: turtle.turtleDoc.test(''),
+      input: ': : :a. :',
+    });
+    changeset.parseAllInput(assistants);
+    expect(changeset.parser.accepting).toBe(true);
+    expect(changeset.replacement()).toBe(':\n  : :a .\n:');
+  });
 });

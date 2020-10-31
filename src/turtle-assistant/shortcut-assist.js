@@ -6,13 +6,22 @@ export const finishStatementWithNewline = function(changeset, next) {
   // Object just finished and the user typed enter (finish with dot automatically)
   // Only do this on the last character entered to avoid messing up pasted text chunks
   if (
-    /^\n$/.test(remainder(changeset))
+    (/^\n$/.test(remainder(changeset))
+      || /^\s$/.test(remainder(changeset))
+      && changeset.lastChar() === '.')
     && changeset.inserting
     && changeset.parser.someAccepting('object')
   ) {
     // console.debug(`finishStatementWithNewline [${remainder(changeset)}]`);
     // Replace latest entry with dot and indentation
-    changeset.replaceChar(' .\n');
+    if (changeset.lastChar() === '.') {
+      changeset.replaceFromStart(
+        changeset.parser.text.substring(0, changeset.parser.text.length - 1)
+        + ' .\n', true);
+    }
+    else {
+      changeset.replaceChar(' .\n');
+    }
     return;
   }
   next();

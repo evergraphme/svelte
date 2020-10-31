@@ -19,6 +19,10 @@ export const indentAfterPredicate = function(changeset, next) {
 }
 
 export const indentAfterDot = function(changeset, next) {
+  if (changeset.upcoming(/\.\s/) && changeset.parser.someAccepting('object')) {
+    // Add space before dot to avoid confusing parser
+    changeset.replaceChar(' .');
+  }
   next();
   // Statement finished by entering the last dot
   if (changeset.lastChar() === '.' && changeset.parser.satisfied) {

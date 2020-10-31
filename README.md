@@ -15,24 +15,40 @@ Try it out at https://evergraphme.github.io/turtle-editor/
   </head>
 
   <body>
-    <turtle-editor content="@base &lt;http://example.org/> .
-@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#> .
-@prefix foaf: &lt;http://xmlns.com/foaf/0.1/> .
-@prefix rel: &lt;http://www.perceive.net/schemas/relationship/> .
+    <turtle-editor text="#contents"/>
 
-&lt;#green-goblin>
-    rel:enemyOf &lt;#spiderman> ;
-    a foaf:Person ;
-    foaf:name 'Green Goblin' .
+    <script id="contents" type="text/turtle">
+      @base <http://example.org/> .
+      @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+      @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+      @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+      @prefix rel: <http://www.perceive.net/schemas/relationship/> .
 
-    &lt;#spiderman>
-    rel:enemyOf &lt;#green-goblin> ;
-    a foaf:Person ;
-    foaf:name 'Spiderman', 'Человек-паук'@ru ."/>
+      <#green-goblin>
+        rel:enemyOf <#spiderman> ;
+        a foaf:Person ;
+        foaf:name 'Green Goblin' .
+
+      <#spiderman>
+        rel:enemyOf <#green-goblin> ;
+        a foaf:Person ;
+        foaf:name 'Spiderman', 'Человек-паук'@ru .
+    </script>
   </body>
 </html>
 ```
+
+## Inserting RDF
+
+1. `<turtle-editor text="#selector"/>`. Provide initial text in a script tag, fetched on intialization by retrieving the DOM element targeted by the selector (see example above).
+1. `<turtle-editor text="<urn:subject> <urn:predicate> <urn:object> ."/>`. Provide initial text inline as an attribute to the component.
+1. `document.querySelector('turtle-editor').text('#selector')`. Same as above but using javascript.
+1. `document.querySelector('turtle-editor').dataset(dataset)`. Provide initial text via a [RDF/JS dataset](https://rdf.js.org/dataset-spec/#dataset-interface);
+
+## Retrieving RDF
+
+1. `document.querySelector('turtle-editor').text()` returns the text as seen in the editor.
+1. `document.querySelector('turtle-editor').dataset()` returns a [RDF/JS dataset](https://rdf.js.org/dataset-spec/#dataset-interface) with all parsed quads in the document.
 
 ## Subscribing to updates
 
@@ -52,10 +68,6 @@ The editor will post updates as soon as new quads are parsed (or removed). See e
       })
     </script>
 ```
-
-## Retrieving RDF
-
-`document.querySelector('turtle-editor').dataset()` returns a [RDF/JS dataset](https://rdf.js.org/dataset-spec/#dataset-interface) with all parsed quads in the document.
 
 ## Styling
 
@@ -101,6 +113,6 @@ subject
 * After an object, type space twice to add another predicate (add `;\n  `)
 * Backspace after one of the above removes all the text and moves the cursor back to just after the object
 
-# Alternatives
+# Alternative editors for Turtle
 
 * https://perfectkb.github.io/yate/
