@@ -92,9 +92,9 @@
         // }],
         fontSize: '14pt',
       });
-      // editor.session.selection.on('changeCursor', function(e) {
-      //   console.log(e);
-      // });
+      editor.session.selection.on('changeCursor', function(e) {
+        console.log(`cc ${editor.session.selection.getCursor().row},${editor.session.selection.getCursor().column} (${editor.getCursorPosition().row}, ${editor.getCursorPosition().column})`);
+      });
 
       // Insert turtle
       if (buffer) {

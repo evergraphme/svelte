@@ -6,7 +6,7 @@ import { Statement } from './statement';
 * document is always re-parsed as indentation/semantics might have changed.
 */
 export class Changeset {
-  constructor({ parser, original, wanted, input, startRow = 0, inserting = true }) {
+  constructor({ parser, original, wanted, input, startRow = 0, inserting = true, cursor }) {
     // Already parsed statements
     this.statements = [];
     // Quads emitted from current statement
@@ -34,6 +34,14 @@ export class Changeset {
       text: this.change.indexOf(parser.text) === 0 ? parser.text : '',
       callback: (quad) => { this.currentQuads.push(quad); },
     });
+    this.cursor = cursor ? cursor : { row: 0, column: 0 };
+    const lengthOfChange = this.change.length - this.original.length;
+    this.charactersAfterCursor = this.change
+      .split('\n')
+      .slice(this.cursor.row - this.startRow)
+      .join('\n')
+      .length - this.cursor.column - (this.inserting ? lengthOfChange : 0);
+    console.log(`aftercursor:${this.charactersAfterCursor} changed:${this.change.length-this.original.length} (${this.cursor.row}, ${this.cursor.column}) [${this.change.replace(/\n/g, '\\n')}]`);
   }
 
   // Next character to parse
@@ -52,12 +60,6 @@ export class Changeset {
     return match && match.index === 0;
   }
 
-  currentRow() {
-    return this.statements.map(s => s.rowCount).reduce((acc, cur) => {
-      return acc + cur;
-    }, 0);
-  }
-
   // Replacement text to execute changeset, including parsed statements
   replacement() {
     return [...this.statements.map(s => s.text), this.change].join('\n');
@@ -67,6 +69,8 @@ export class Changeset {
   // Replacement pushed to parser without assistance rules
   replaceChar(replacement, deleteRemainder = false) {
     // console.log(`replaceChar [${replacement}]`);
+    // this.removeFromCursor(this.nextChar());
+    // this.addToCursor(this.nextChar(), replacement);
     this.change =
       this.change.substring(0, this.parser.text.length)
       + replacement
@@ -78,6 +82,7 @@ export class Changeset {
   // Replacement pushed to parser without assistance rules
   replaceFromStart(replacement, deleteRemainder = false) {
     // console.log(`replaceFromStart [${this.change.substring(0, this.parser.text.length + 1).replace(/\n/g, '\\n')}]=>[${replacement.replace(/\n/g, '\\n')}]`);
+    // this.addToCursor(this.parser.text, replacement);
     this.change =
       replacement
       + (deleteRemainder ? '' : this.change.substring(this.parser.text.length + 1));
@@ -92,6 +97,7 @@ export class Changeset {
   // Replacement pushed to parser without assistance rules
   add(text) {
     // console.log(`add [${text}]`);
+    // this.addToCursor('', text);
     this.change = this.change + text;
     this.parser.push(this.nextChar() + text);
   }
@@ -108,7 +114,7 @@ export class Changeset {
   completeStatement() {
     // console.log(`completeStatement [${this.parser.text.trim().replace(/\n/g, '\\n')}]`)
     this.statements.push(new Statement({
-      startRow: this.startRow + this.currentRow(),
+      startRow: this.statements.length > 0 ? this.statements[this.statements.length - 1].endRow + 1 : this.startRow,
       text: this.parser.text.trim(),
       quads: this.currentQuads,
     }));
@@ -131,6 +137,24 @@ export class Changeset {
         row: this.endRow,
         column: this.endColumn,
       },
+    }
+  }
+
+  addToCursor(oldText, newText) {
+    const parserLines = this.parser.text.split('\n');
+    const currentRow = (this.statements.length > 0 ? this.statements[this.statements.length - 1].endRow + 1 : this.startRow) + parserLines.length - 1;
+    const currentColumn = parserLines[parserLines.length - 1].length;
+    // Check if cursor is after the current parser position
+    // console.log(`cursor: ${this.cursor.row}, ${this.cursor.column} - current: ${currentRow}, ${currentColumn}`);
+    if (currentRow < this.cursor.row || currentRow === this.cursor.row && currentColumn <= this.cursor.column) {
+      const old = Object.assign({}, this.cursor);
+      const newLines = newText.split('\n');
+      const oldLines = oldText.split('\n');
+      this.cursor = {
+        row: this.cursor.row + newLines.length - 1 - oldLines.length + 1,
+        column: newLines.length > 1 ? newLines[newLines.length-1].length : (oldLines.length > 1 ? 0 : this.cursor.column - oldLines[0].length + newLines[0].length),
+      };
+      // console.log(`addToCursor ${old.row}, ${old.column} - ${this.cursor.row}, ${this.cursor.column}`);
     }
   }
 }
@@ -157,9 +181,18 @@ export const parseNextInput = function(changeset, rules) {
     }
   }
   next();
+  if (changeset.charactersAfterCursor === changeset.change.length - changeset.parser.text.length) {
+    // We are now at cursor position, save new cursor position based on already parsed text
+    const parserLines = changeset.parser.text.split('\n');
+    changeset.cursor = {
+      row: (changeset.statements.length > 0 ? changeset.statements[changeset.statements.length - 1].endRow + 1 : changeset.startRow) + parserLines.length - 1,
+      column: parserLines[parserLines.length - 1].length,
+    };
+    console.log(`cursor after (${changeset.cursor.row}, ${changeset.cursor.column})! [${changeset.parser.text.replace(/\n/g, '\\n')}] [${changeset.change.replace(/\n/g, '\\n')}]`);
+  }
 }
 
-export const fromAceDelta = function(statements, parser, delta) {
+export const fromAceDelta = function(statements, parser, delta, cursor) {
   let changeset;
 
   // Retrieve all statments that are affected by the change
@@ -194,6 +227,7 @@ export const fromAceDelta = function(statements, parser, delta) {
     wanted: change,
     startRow: startRow,
     inserting: delta.action === 'insert',
+    cursor,
   });
 
   return changeset;

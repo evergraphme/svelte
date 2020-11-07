@@ -165,4 +165,30 @@ describe('TurtleAssistant', () => {
     expect(assistant.parser.text).toBe('');
     expect(assistant.statements.length).toBe(0);
   });
+
+  test('cursor should remain in place when typing invalid input', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert(':\n  : : .\n:');
+    editor.moveCursorTo(1, 0);
+    editor.insert('!');
+    expect(editor.getValue()).toBe(':\n  : : .\n:');
+    expect(editor.getCursorPosition()).toEqual({row: 1, column: 0});
+    editor.moveCursorTo(2, 0);
+    editor.insert('!');
+    expect(editor.getValue()).toBe(':\n  : : .\n:');
+    expect(editor.getCursorPosition()).toEqual({row: 2, column: 0});
+  });
+
+  test('cursor should remain in place when typing in previous statements', () => {
+    const element = document.getElementById('ace');
+    const editor = element.editor;
+    const assistant = new TurtleAssistant({editor});
+    editor.insert(':\n  : : .\n:');
+    editor.moveCursorTo(0, 1);
+    editor.insert('a');
+    expect(editor.getValue()).toBe(':a\n  : : .\n:');
+    expect(editor.getCursorPosition()).toEqual({row: 0, column: 2});
+  });
 });
