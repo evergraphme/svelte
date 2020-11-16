@@ -31,6 +31,15 @@ describe('statement', () => {
     expect(changeset.change).toBe(':me\n  :like :apples;\n  ');
   });
 
+  test('do not indent after semicolon in literal', () => {
+    const changeset = new Changeset({
+      parser: turtle.turtleDoc.test(':me\n  :like "apples'),
+      input: ';',
+    });
+    changeset.parseAllInput(assistants);
+    expect(changeset.change).toBe(':me\n  :like "apples;');
+  });
+
   test('indent after comma/new object', () => {
     const changeset = new Changeset({
       parser: turtle.turtleDoc.test(':me\n  :like :apples'),
@@ -38,6 +47,15 @@ describe('statement', () => {
     });
     changeset.parseAllInput(assistants);
     expect(changeset.change).toBe(':me\n  :like\n    :apples,\n    ');
+  });
+
+  test('do not indent after comma in literal', () => {
+    const changeset = new Changeset({
+      parser: turtle.turtleDoc.test(':me\n  :like "apples'),
+      input: ',',
+    });
+    changeset.parseAllInput(assistants);
+    expect(changeset.change).toBe(':me\n  :like "apples,');
   });
 
   test('indent after comma/yet another object', () => {
@@ -85,6 +103,15 @@ describe('statement', () => {
     changeset.parseAllInput(assistants);
     expect(changeset.parser.text).toBe(':ws\n  ');
     expect(changeset.change).toBe(':ws\n  ');
+  });
+
+  test('allow space in literal', () => {
+    const changeset = new Changeset({
+      parser: turtle.turtleDoc.test(':me\n  :like "apples'),
+      input: ' ',
+    });
+    changeset.parseAllInput(assistants);
+    expect(changeset.change).toBe(':me\n  :like "apples ');
   });
 
   test('disallow leading whitespace but accept further input', () => {

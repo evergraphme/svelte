@@ -11,6 +11,7 @@ export const finishStatementWithNewline = function(changeset, next) {
       && changeset.lastChar() === '.')
     && changeset.inserting
     && changeset.parser.someAccepting('object')
+    && !changeset.parser.someAccepting('String')
   ) {
     // console.debug(`finishStatementWithNewline [${remainder(changeset)}]`);
     // Replace latest entry with dot and indentation
@@ -36,6 +37,7 @@ export const spaceOnceForNewObject = function(changeset, next) {
     // /[ \t]/.test(changeset.nextChar())
     // && changeset.change.length === changeset.parser.text.length + 1
     && changeset.parser.someAccepting('object')
+    && !changeset.parser.someAccepting('String')
   ) {
     // console.debug(`spaceOnceForNewObject [${remainder(changeset)}]`);
     if (changeset.parser.collect(p => p.accepting && p.fullName().endsWith('.sequence.object')).length > 0) {
@@ -64,6 +66,7 @@ export const spaceTwiceForNewPredicate = function(changeset, next) {
     // && changeset.change.length === changeset.parser.text.length + 1
     // accepting but empty: objectList.zeroOrMore.sequence.object
     && changeset.parser.collect(p => p.accepting && p.fullName().endsWith('objectList.zeroOrMore.sequence.object') && p.text.length === 0).length > 0
+    && !changeset.parser.someAccepting('String')
   ) {
     // console.debug(`spaceTwiceForNewPredicate [${remainder(changeset)}]`);
     // Replace latest entry with semi-colon and indentation
