@@ -40,6 +40,15 @@ describe('statement', () => {
     expect(changeset.change).toBe(':me\n  :like "apples;');
   });
 
+  test('do not indent after semicolon in IRI', () => {
+    const changeset = new Changeset({
+      parser: turtle.turtleDoc.test(':me\n  :like <apples'),
+      input: ';',
+    });
+    changeset.parseAllInput(assistants);
+    expect(changeset.change).toBe(':me\n  :like <apples;');
+  });
+
   test('indent after comma/new object', () => {
     const changeset = new Changeset({
       parser: turtle.turtleDoc.test(':me\n  :like :apples'),

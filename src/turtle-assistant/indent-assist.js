@@ -1,6 +1,10 @@
 export const indentAfterSubject = function(changeset, next) {
   // Subject just finished and the user typed a whitespace
-  if (/\s/.test(changeset.nextChar()) && changeset.parser.someAccepting('subject') && !changeset.parser.someAccepting('directive')) {
+  if (
+    /\s/.test(changeset.nextChar())
+    && changeset.parser.someAccepting('subject')
+    && !changeset.parser.someAccepting('directive')
+  ) {
     // Replace latest entry with indentation
     changeset.replaceChar('\n  ');
     return;
@@ -10,7 +14,10 @@ export const indentAfterSubject = function(changeset, next) {
 
 export const indentAfterPredicate = function(changeset, next) {
   // Subject just finished and the user typed a whitespace
-  if (/\s/.test(changeset.nextChar()) && changeset.parser.someAccepting('verb')) {
+  if (
+    /\s/.test(changeset.nextChar())
+    && changeset.parser.someAccepting('verb')
+  ) {
     // Replace latest entry with indentation
     changeset.replaceChar(' ');
     return;
@@ -19,7 +26,12 @@ export const indentAfterPredicate = function(changeset, next) {
 }
 
 export const indentAfterDot = function(changeset, next) {
-  if (changeset.upcoming(/\.\s/) && changeset.parser.someAccepting('object') && !changeset.parser.someAccepting('String')) {
+  if (
+    changeset.upcoming(/\.\s/)
+    && changeset.parser.someAccepting('object')
+    && !changeset.parser.someAccepting('String')
+    && !changeset.parser.someAccepting('IRIREF')
+  ) {
     // Add space before dot to avoid confusing parser
     changeset.replaceChar(' .');
   }
@@ -33,7 +45,12 @@ export const indentAfterDot = function(changeset, next) {
 
 export const indentAfterSemicolon = function(changeset, next) {
   // Object just finished and the user typed a semi-colon
-  if (changeset.nextChar() === ';' && changeset.parser.someAccepting('object') && !changeset.parser.someAccepting('String')) {
+  if (
+    changeset.nextChar() === ';'
+    && changeset.parser.someAccepting('object')
+    && !changeset.parser.someAccepting('String')
+    && !changeset.parser.someAccepting('IRIREF')
+  ) {
     // Add indentation
     changeset.add('\n  ');
     return;
@@ -43,7 +60,12 @@ export const indentAfterSemicolon = function(changeset, next) {
 
 export const indentAfterComma = function(changeset, next) {
   // Object just finished and the user typed a comma
-  if (changeset.nextChar() === ',' && changeset.parser.someAccepting('object') && !changeset.parser.someAccepting('String')) {
+  if (
+    changeset.nextChar() === ','
+    && changeset.parser.someAccepting('object')
+    && !changeset.parser.someAccepting('String')
+    && !changeset.parser.someAccepting('IRIREF')
+  ) {
     if (changeset.parser.collect(p => p.accepting && p.fullName().endsWith('.sequence.object')).length > 0) {
       // This is not the first object, just add indentation
       changeset.add('\n    ');
